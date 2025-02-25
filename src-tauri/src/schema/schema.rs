@@ -4,8 +4,9 @@ diesel::table! {
     directories (id) {
         id -> Uuid,
         #[max_length = 512]
-        path -> Nullable<Varchar>,
-        is_imported -> Nullable<Bool>,
+        path -> Varchar,
+        is_imported -> Bool,
+        added_time -> Timestamp,
     }
 }
 
@@ -67,7 +68,9 @@ diesel::table! {
 diesel::table! {
     photos (id) {
         id -> Uuid,
-        path -> Nullable<Uuid>,
+        path -> Uuid,
+        #[max_length = 255]
+        name -> Varchar,
     }
 }
 

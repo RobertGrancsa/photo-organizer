@@ -1,1 +1,1 @@
-DROP TABLE directories;
+DROP TABLE photos;
