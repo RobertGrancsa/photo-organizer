@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { springIn } from "@/lib/animations";
 import { addFolder, getPhotosAtPath } from "@/lib/api";
 import { useNavigate } from "react-router";
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 import { ChosenDirectoryContext } from "@/contexts/ChosenDirectoryContext";
 
 const BackgroundBeamsDemo = () => {
@@ -14,6 +14,24 @@ const BackgroundBeamsDemo = () => {
     const { setCurrentDirectory, setLoadedPhotos } = useContext(
         ChosenDirectoryContext,
     );
+
+    const uploadFolder = useCallback(async () => {
+        const dir = await open({ directory: true });
+        console.log(dir);
+
+        if (!dir) {
+            return;
+        }
+
+        await addFolder(dir);
+        const photos = await getPhotosAtPath(dir);
+
+        setCurrentDirectory(dir);
+        setLoadedPhotos(photos);
+
+        navigate("/home");
+    }, []);
+
     return (
         <div className="h-screen w-full bg-neutral-950 relative flex flex-col items-center justify-center antialiased">
             <motion.div
@@ -30,18 +48,7 @@ const BackgroundBeamsDemo = () => {
                 <Button
                     variant="outline"
                     className="relative z-10 mx-auto w-full"
-                    onClick={() =>
-                        open({ directory: true }).then(async (dir) => {
-                            console.log(dir);
-                            await addFolder(dir);
-                            const photos = await getPhotosAtPath(dir);
-
-                            setCurrentDirectory(dir);
-                            setLoadedPhotos(photos);
-
-                            navigate("/home");
-                        })
-                    }>
+                    onClick={uploadFolder}>
                     Select a folder
                 </Button>
             </motion.div>

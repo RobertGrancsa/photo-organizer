@@ -15,9 +15,11 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .manage(pool)
-        .invoke_handler(tauri::generate_handler![get_folders])
-        .invoke_handler(tauri::generate_handler![add_folder])
-        .invoke_handler(tauri::generate_handler![get_photos_from_path])
+        .invoke_handler(tauri::generate_handler![
+            get_folders,
+            add_folder,
+            get_photos_from_path
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

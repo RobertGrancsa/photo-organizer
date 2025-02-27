@@ -1,17 +1,8 @@
 import * as React from "react";
-import {
-    createContext,
-    Dispatch,
-    PropsWithChildren,
-    SetStateAction,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+import { createContext, Dispatch, PropsWithChildren, SetStateAction, useEffect, useMemo, useState } from "react";
 import { getFolders } from "@/lib/api";
 import { useNavigate } from "react-router";
-
-export type Folder = Record<string, string | string[]>;
+import { Folder } from "@/types/folder";
 
 interface FoldersContextType {
     folders: Folder;
@@ -19,12 +10,12 @@ interface FoldersContextType {
 }
 
 export const FoldersContext = createContext<FoldersContextType>({
-    folders: {},
+    folders: [],
     setFolders: () => {},
 });
 
 const FoldersContextComponent: React.FC<PropsWithChildren> = ({ children }) => {
-    const [folders, setFolders] = useState<Folder>({});
+    const [folders, setFolders] = useState<Folder>([]);
     const navigate = useNavigate();
 
     const value = useMemo(
@@ -32,20 +23,22 @@ const FoldersContextComponent: React.FC<PropsWithChildren> = ({ children }) => {
             folders,
             setFolders,
         }),
-        [],
+        [folders]
     );
 
     useEffect(() => {
         getFolders()
-            .then(setFolders)
+            .then((folders) => {
+                if (!folders.length) {
+                    navigate("/launch");
+                }
+
+                setFolders(folders);
+            })
             .catch(() => navigate("/launch"));
     }, []);
 
-    return (
-        <FoldersContext.Provider value={value}>
-            {children}
-        </FoldersContext.Provider>
-    );
+    return <FoldersContext.Provider value={value}>{children}</FoldersContext.Provider>;
 };
 
 export default FoldersContextComponent;
