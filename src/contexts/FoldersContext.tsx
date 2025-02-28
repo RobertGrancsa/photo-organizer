@@ -1,44 +1,23 @@
-import * as React from "react";
-import { createContext, Dispatch, PropsWithChildren, SetStateAction, useEffect, useMemo, useState } from "react";
 import { getFolders } from "@/lib/api";
 import { useNavigate } from "react-router";
-import { Folder } from "@/types/folder";
+import { useQuery } from "@tanstack/react-query";
+import { setPath } from "@/contexts/slices/pathSlice";
+import { useAppDispatch } from "@/lib/hooks";
 
-interface FoldersContextType {
-    folders: Folder;
-    setFolders: Dispatch<SetStateAction<Folder>>;
-}
-
-export const FoldersContext = createContext<FoldersContextType>({
-    folders: [],
-    setFolders: () => {},
-});
-
-const FoldersContextComponent: React.FC<PropsWithChildren> = ({ children }) => {
-    const [folders, setFolders] = useState<Folder>([]);
+const useIsInitialized = () => {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const { isError, data, isSuccess } = useQuery({ queryKey: ["folders"], queryFn: getFolders });
 
-    const value = useMemo(
-        (): FoldersContextType => ({
-            folders,
-            setFolders,
-        }),
-        [folders]
-    );
+    if (isError || (isSuccess && !data.length)) {
+        navigate("/launch");
+        return;
+    }
 
-    useEffect(() => {
-        getFolders()
-            .then((folders) => {
-                if (!folders.length) {
-                    navigate("/launch");
-                }
-
-                setFolders(folders);
-            })
-            .catch(() => navigate("/launch"));
-    }, []);
-
-    return <FoldersContext.Provider value={value}>{children}</FoldersContext.Provider>;
+    if (isSuccess && data.length) {
+        console.log("set path");
+        dispatch(setPath(data[0]));
+    }
 };
 
-export default FoldersContextComponent;
+export default useIsInitialized;

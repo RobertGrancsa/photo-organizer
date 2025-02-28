@@ -1,8 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Folder } from "@/contexts/FoldersContext";
-import { Photo } from "@/contexts/ChosenDirectoryContext";
+import { Folder } from "@/types/folder";
+import { Photo } from "@/types/photo";
 
-export async function getFolders(): Promise<Folder> {
+export async function getFolders(): Promise<Folder[]> {
     return invoke("get_folders");
 }
 

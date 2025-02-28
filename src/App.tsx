@@ -1,20 +1,16 @@
 import * as React from "react";
 import "./App.css";
 import Router from "./Router";
-import ChosenDirectoryContextComponent from "@/contexts/ChosenDirectoryContext";
-import FoldersContextComponent from "@/contexts/FoldersContext";
-import { QueryClient, QueryClientContext, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const queryClient = new QueryClient();
 
 const App: React.FC = () => {
     return (
         <QueryClientProvider client={queryClient}>
-            <FoldersContextComponent>
-                <ChosenDirectoryContextComponent>
-                    <Router />
-                </ChosenDirectoryContextComponent>
-            </FoldersContextComponent>
+            <ReactQueryDevtools initialIsOpen={false} />
+            <Router />
         </QueryClientProvider>
     );
 };
