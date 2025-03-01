@@ -18,7 +18,11 @@ const ImportFolder: React.FC<ImportFolderProps> = ({ text, variant, className })
 
     const mutation = useMutation({
         mutationFn: addFolder,
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["folders", "photos"] }),
+        onSuccess: () =>
+            Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["folders"] }),
+                // queryClient.invalidateQueries({ queryKey: ["photos"] }),
+            ]),
     });
 
     const uploadFolder = useCallback(async () => {

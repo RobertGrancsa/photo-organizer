@@ -18,7 +18,7 @@ const Photo: React.FC<PhotoProps> = ({ photo, folder }) => {
     return (
         <div className="aspect-square">
             <div className="w-fit h-fit overflow-hidden rounded-md">
-                <motion.img whileHover={{ scale: 1.1 }} src={path} alt={photo.name} />
+                <motion.img whileHover={{ scale: 1.1 }} src={path} alt={photo.name} loading="lazy" />
             </div>
         </div>
     );
