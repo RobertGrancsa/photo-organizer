@@ -7,6 +7,8 @@ import useIsInitialized from "@/contexts/FoldersContext";
 const Router: React.FC = () => {
     useIsInitialized();
 
+    // return null;
+
     return (
         <Routes>
             <Route path="/" element={<HomePage />} />
