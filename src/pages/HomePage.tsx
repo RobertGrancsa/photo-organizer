@@ -16,8 +16,6 @@ const HomePage = () => {
         enabled: !!folder.id,
     });
 
-    console.log(loadedPhotos);
-
     if (!isFetched) {
         return <LoadingPage />;
     }

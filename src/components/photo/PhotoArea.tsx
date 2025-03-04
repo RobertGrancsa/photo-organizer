@@ -1,22 +1,23 @@
 import * as React from "react";
-import Photo from "@/components/photo/Photo";
-import { Photo as PhotoType } from "@/types/photo";
+import PhotoPreview from "@/components/photo/PhotoPreview";
+import { Photo } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
+import PhotoDisplay from "@/components/photo/PhotoDisplay";
+import PhotoGrid from "@/components/photo/PhotoGrid";
 
 interface PhotoAreaProps {
-    photos: PhotoType[];
+    photos: Photo[];
 }
 
 const PhotoArea: React.FC<PhotoAreaProps> = ({ photos }) => {
-    return (
-        <ScrollArea className="w-fit h-screen rounded-md border flex align-middle items-center justify-center">
-            <div className="p-4 grid grid-cols-4 gap-4">
-                {photos.map((photo) => (
-                    <Photo key={photo.id} photo={photo} />
-                ))}
-            </div>
-        </ScrollArea>
-    );
+    const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+
+    if (selectedPhoto) {
+        return <PhotoDisplay photo={selectedPhoto} />;
+    }
+
+    return <PhotoGrid photos={photos} columnCount={4} />;
 };
 
 export default PhotoArea;

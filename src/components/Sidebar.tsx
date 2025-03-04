@@ -1,13 +1,11 @@
 import * as React from "react";
-import { Folder, Tree, File, TreeViewElement } from "@/components/magicui/file-tree";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
+import { File, Folder, Tree, TreeViewElement } from "@/components/magicui/file-tree";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { selectCurrentFolder, setPath } from "@/contexts/slices/pathSlice";
 import { useQuery } from "@tanstack/react-query";
 import { getFolders } from "@/lib/api";
-import { Folder as FolderType } from "@/types/folder";
-import { Photo } from "@/types/photo";
-import { Button } from "@/components/ui/button";
+import { Folder as FolderType, Photo } from "@/types";
 import ImportFolder from "@/components/folders/ImportFolder";
 
 const ELEMENTS = [
