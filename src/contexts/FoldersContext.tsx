@@ -17,6 +17,7 @@ const useIsInitialized = () => {
     if (isSuccess && data.length) {
         console.log("set path");
         dispatch(setPath(data[0]));
+        navigate("/");
     }
 };
 

@@ -1,13 +1,13 @@
 import * as React from "react";
+import { useEffect, useRef, useState } from "react";
 import { Folder, Photo } from "@/types";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useAppSelector } from "@/lib/hooks";
-import { selectCurrentPath } from "@/contexts/slices/pathSlice";
+import { selectCurrentFolder } from "@/contexts/slices/pathSlice";
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
-import { springIn } from "@/lib/animations";
 import { clsx } from "clsx";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 interface PhotoProps {
     photo: Photo;
@@ -15,8 +15,11 @@ interface PhotoProps {
 }
 
 const PhotoPreview: React.FC<PhotoProps> = ({ photo, folder }) => {
-    const dirPath = useAppSelector(selectCurrentPath);
-    const path = convertFileSrc((folder ? folder[0].path : dirPath) + "\\" + photo.name);
+    const dir = useAppSelector(selectCurrentFolder);
+    const path = convertFileSrc((folder ? folder[0].path : dir.path) + "\\" + photo.name);
+
+    const ext = photo.name.split(".")[1];
+    const previewPath = convertFileSrc(`C:\\Users\\robik\\Pictures\\${"photo-organizer"}\\${dir.id}\\${photo.id}.preview.avif`);
 
     const [loaded, setLoaded] = useState(false);
     const imgRef = useRef<HTMLImageElement>(null);
@@ -27,7 +30,7 @@ const PhotoPreview: React.FC<PhotoProps> = ({ photo, folder }) => {
                 if (entry.isIntersecting) {
                     // Load the image once it's in view
                     const img = entry.target;
-                    if (img instanceof HTMLImageElement) img.src = path;
+                    if (img instanceof HTMLImageElement) img.src = previewPath;
                     observer.unobserve(img);
                 }
             });
@@ -39,18 +42,30 @@ const PhotoPreview: React.FC<PhotoProps> = ({ photo, folder }) => {
     }, [path]);
 
     return (
-        <div className=" p-2 flex-1 box-border">
-            <div className="w-fit h-fit overflow-hidden rounded-md">
-                <motion.img
-                    className={clsx({ hidden: !loaded })}
-                    ref={imgRef}
-                    onLoad={() => setLoaded(true)}
-                    whileHover={{ scale: 1.1 }}
-                    src={path}
-                    alt={photo.name}
-                />
-                {/*{!loaded && <Skeleton className="h-[400px] w-[400px]" />}*/}
-            </div>
+        <div className="p-2 flex-1 box-border">
+            <Dialog>
+                <DialogTrigger>
+                    <Card className="overflow-hidden rounded-lg shadow-md p-0 border-none">
+                        <CardContent className="p-0">
+                            <motion.img
+                                layout
+                                className={clsx("w-auto h-full aspect-3/2 object-cover scale-101", { hidden: false })}
+                                ref={imgRef}
+                                onLoad={() => setLoaded(true)}
+                                whileHover={{ scale: 1.1 }}
+                                src={previewPath}
+                                alt={photo.name}
+                                layoutId="photo"
+                                // loading="lazy"
+                            />
+                            {/*{!loaded && <Skeleton className="h-[400px] w-[400px]" />}*/}
+                        </CardContent>
+                    </Card>
+                </DialogTrigger>
+                <DialogContent className="flex justify-center items-center w-3/4">
+                    <motion.img src={path} alt={photo.name} layoutId="photo" id="photo" />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

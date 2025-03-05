@@ -11,7 +11,7 @@ interface PhotoGridProps {
 }
 
 const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, columnCount = 3 }) => {
-    const parentRef = useRef();
+    const parentRef = useRef<HTMLDivElement>(null);
     const [rowHeights, setRowHeights] = useState<Record<number, number>>({});
 
     const rowCount = Math.ceil(photos.length / columnCount);
@@ -27,10 +27,17 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, columnCount = 3 }) => {
         [rowHeights]
     );
 
-    const calculateHeight = (index) => {
-        console.log(index, rowHeights);
-        return rowHeights[index] || 200;
-    };
+    const calculateHeight = useCallback(() => {
+        if (!parentRef.current) {
+            return 280;
+        }
+
+        const width = parentRef.current.getBoundingClientRect().width;
+
+        console.log(Math.floor((width / columnCount / 3) * 2));
+
+        return Math.floor((width / columnCount / 3) * 2);
+    }, [parentRef.current]);
 
     // Set up the virtualizer for rows using variable sizes
     const rowVirtualizer = useVirtualizer({

@@ -5,8 +5,9 @@ use bigdecimal::BigDecimal;
 use uuid::Uuid;
 
 pub mod schema;
+pub mod types;
 
-#[derive(Queryable, Selectable, Serialize)]
+#[derive(Queryable, Selectable, Serialize, Clone)]
 #[diesel(table_name = crate::schema::schema::directories)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Directory {
@@ -23,18 +24,10 @@ pub struct NewDirectory {
     pub path: String,
 }
 
-#[derive(Queryable, Selectable, Serialize)]
+#[derive(Queryable, Selectable, Serialize, Insertable)]
 #[diesel(table_name = crate::schema::schema::photos)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Photo {
-    pub id: Uuid,
-    pub path: Uuid,
-    pub name: String,
-}
-
-#[derive(Insertable)]
-#[diesel(table_name = crate::schema::schema::photos)]
-pub struct NewPhoto {
     pub id: Uuid,
     pub path: Uuid,
     pub name: String,
