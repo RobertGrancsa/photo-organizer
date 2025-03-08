@@ -17,7 +17,10 @@ fn is_photo(file_path: &Path) -> bool {
     }
 }
 
-pub fn insert_photos_from_directory(conn: &mut DbPoolConn, dir: &Directory) -> Result<(), diesel::result::Error> {
+pub fn insert_photos_from_directory(
+    conn: &mut DbPoolConn,
+    dir: &Directory,
+) -> Result<(), diesel::result::Error> {
     let photo_entries: Vec<Photo> = WalkDir::new(&dir.path)
         .into_iter()
         .filter_map(|entry| entry.ok()) // Ignore errors
@@ -41,8 +44,11 @@ pub fn insert_photos_from_directory(conn: &mut DbPoolConn, dir: &Directory) -> R
 pub fn get_photos_from_directory(conn: &mut DbPoolConn, path_uuid: Uuid) -> Vec<Photo> {
     use crate::schema::schema::photos;
 
-    photos.filter(photos::path.eq(&path_uuid)).load::<Photo>(conn).unwrap_or_else(|err| {
-        eprintln!("Error retrieving photos: {:?}", err);
-        vec![]
-    })
+    photos
+        .filter(photos::path.eq(&path_uuid))
+        .load::<Photo>(conn)
+        .unwrap_or_else(|err| {
+            eprintln!("Error retrieving photos: {:?}", err);
+            vec![]
+        })
 }

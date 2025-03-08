@@ -1,17 +1,18 @@
 import * as React from "react";
 import "./App.css";
-import Router from "./Router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { RouterProvider } from "react-router";
+import router from "@/Router";
+import { AnimatePresence } from "framer-motion";
 
-const queryClient = new QueryClient();
+export const APP_NAME = "photo-organizer";
 
 const App: React.FC = () => {
     return (
-        <QueryClientProvider client={queryClient}>
+        <AnimatePresence mode="wait">
+            <RouterProvider router={router} />
             <ReactQueryDevtools initialIsOpen={false} />
-            <Router />
-        </QueryClientProvider>
+        </AnimatePresence>
     );
 };
 

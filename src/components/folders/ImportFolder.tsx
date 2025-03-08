@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addFolder } from "@/lib/api";
+import { useAppDispatch } from "@/lib/hooks";
+import { setPath } from "@/contexts/slices/pathSlice";
 
 interface ImportFolderProps {
     text: string;
@@ -15,14 +17,17 @@ interface ImportFolderProps {
 const ImportFolder: React.FC<ImportFolderProps> = ({ text, variant, className }) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const dispatch = useAppDispatch();
 
     const mutation = useMutation({
         mutationFn: addFolder,
-        onSuccess: () =>
-            Promise.all([
+        onSuccess: (folder) => {
+            dispatch(setPath(folder));
+            return Promise.all([
                 queryClient.invalidateQueries({ queryKey: ["folders"] }),
                 // queryClient.invalidateQueries({ queryKey: ["photos"] }),
-            ]),
+            ]);
+        },
     });
 
     const uploadFolder = useCallback(async () => {

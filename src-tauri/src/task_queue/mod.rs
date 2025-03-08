@@ -4,7 +4,7 @@ use crate::task_queue::tasks::Task;
 use tokio::sync::mpsc;
 
 pub struct TaskQueue {
-    sender: mpsc::UnboundedSender<Task>
+    sender: mpsc::UnboundedSender<Task>,
 }
 
 impl TaskQueue {

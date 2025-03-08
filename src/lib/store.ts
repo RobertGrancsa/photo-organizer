@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import pathReducer from "@/contexts/slices/pathSlice";
+import photosReducer from "@/contexts/slices/photosSlice";
 
 export const store = configureStore({
     reducer: {
         path: pathReducer,
+        photo: photosReducer,
         // config: configReducer,
     },
 });

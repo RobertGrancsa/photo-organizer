@@ -25,6 +25,9 @@ tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-window-state = "2"
+
 dotenvy = "0.15"
 diesel = { version = "2.2.0", features = ["postgres", "postgres_backend", "r2d2", "64-column-tables", "uuid", "numeric", "chrono"] }
 chrono = { version = "0.4.39", features = ["serde"] }
@@ -36,3 +39,4 @@ tokio = { version = "1.43.0", features = ["time"] }
 rayon = "1.10.0"
 image = "0.25.5"
 dirs = "6.0.0"
+

@@ -1,22 +1,23 @@
-pub mod db;
 pub mod commands;
+pub mod db;
 pub mod schema;
 pub mod services;
 pub mod task_queue;
 
 use crate::commands::commands::{add_folder, get_folders, get_photos_from_path};
 use crate::db::init_pool;
-use crate::task_queue::TaskQueue;
 use crate::task_queue::tasks::worker::task_worker;
+use crate::task_queue::TaskQueue;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use tauri::Manager;
+use tokio::sync::Mutex;
 
 pub const APP_NAME: &str = "photo-organizer";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         .setup(|app| {
             let pool = init_pool();
 

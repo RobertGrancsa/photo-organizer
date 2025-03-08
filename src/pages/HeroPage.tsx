@@ -1,13 +1,7 @@
 import * as React from "react";
-import { useCallback } from "react";
 import { BackgroundBeams } from "@/components/ui/background-beams";
-import { Button } from "@/components/ui/button";
-import { open } from "@tauri-apps/plugin-dialog";
 import { motion } from "framer-motion";
 import { springIn } from "@/lib/animations";
-import { addFolder } from "@/lib/api";
-import { useNavigate } from "react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import ImportFolder from "@/components/folders/ImportFolder";
 
 const BackgroundBeamsDemo = () => {

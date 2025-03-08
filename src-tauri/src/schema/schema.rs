@@ -77,8 +77,4 @@ diesel::table! {
 diesel::joinable!(exif_metadata -> photos (photo_id));
 diesel::joinable!(photos -> directories (path));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    directories,
-    exif_metadata,
-    photos,
-);
+diesel::allow_tables_to_appear_in_same_query!(directories, exif_metadata, photos,);

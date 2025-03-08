@@ -1,20 +1,34 @@
 import * as React from "react";
-import { Route, Routes } from "react-router";
+import { createBrowserRouter } from "react-router";
 import HeroPage from "@/pages/HeroPage";
 import HomePage from "@/pages/HomePage";
-import useIsInitialized from "@/contexts/FoldersContext";
+import PhotoDisplay from "@/components/photo/PhotoDisplay";
+import { Loader } from "lucide-react";
+import PhotoArea from "@/components/photo/PhotoArea";
 
-const Router: React.FC = () => {
-    useIsInitialized();
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <HomePage />,
+        children: [
+            {
+                path: "/:directory",
+                element: <PhotoArea />,
+            },
+            {
+                path: "/:directory/:name",
+                element: <PhotoDisplay />,
+            },
+        ],
+    },
+    {
+        path: "/launch",
+        element: <HeroPage />,
+    },
+    {
+        path: "*",
+        element: <Loader />,
+    },
+]);
 
-    // return null;
-
-    return (
-        <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/launch" element={<HeroPage />} />
-        </Routes>
-    );
-};
-
-export default Router;
+export default router;

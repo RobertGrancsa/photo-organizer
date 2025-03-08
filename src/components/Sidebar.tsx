@@ -7,6 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getFolders } from "@/lib/api";
 import { Folder as FolderType, Photo } from "@/types";
 import ImportFolder from "@/components/folders/ImportFolder";
+import { clearSelectedPhotos } from "@/contexts/slices/photosSlice";
+import { useNavigate } from "react-router";
 
 const ELEMENTS = [
     {
@@ -62,6 +64,7 @@ const folderToTreeElement = (folder: FolderType): TreeViewElement => ({
 const Sidebar: React.FC = () => {
     const currentFolder = useAppSelector(selectCurrentFolder);
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
     const { isLoading, data: folders } = useQuery({ queryKey: ["folders"], queryFn: getFolders });
 
     const elements = useMemo(() => folders?.map(folderToTreeElement), [folders]);
@@ -77,7 +80,16 @@ const Sidebar: React.FC = () => {
             }
 
             return (
-                <Folder key={item.id} element={item.path} value={item.id} onClick={() => dispatch(setPath(item))}>
+                <Folder
+                    key={item.id}
+                    element={item.path}
+                    value={item.id}
+                    onClick={() => {
+                        dispatch(setPath(item));
+                        dispatch(clearSelectedPhotos());
+                        navigate("/" + item.id);
+                    }}
+                >
                     {mapFolder(item.children)}
                 </Folder>
             );

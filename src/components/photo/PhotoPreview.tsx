@@ -1,25 +1,41 @@
 import * as React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Folder, Photo } from "@/types";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { useAppSelector } from "@/lib/hooks";
-import { selectCurrentFolder } from "@/contexts/slices/pathSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { selectCurrentFolder, selectPreviewDir } from "@/contexts/slices/pathSlice";
 import { motion } from "framer-motion";
 import { clsx } from "clsx";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import * as path from "path-browserify";
+import { useNavigate } from "react-router";
+import { selectSelectedPhotoIndex, setSelectedPhoto } from "@/contexts/slices/photosSlice";
+import { transitionImages } from "@/lib/animations";
 
 interface PhotoProps {
     photo: Photo;
     folder?: Folder;
+    index: number;
 }
 
-const PhotoPreview: React.FC<PhotoProps> = ({ photo, folder }) => {
-    const dir = useAppSelector(selectCurrentFolder);
-    const path = convertFileSrc((folder ? folder[0].path : dir.path) + "\\" + photo.name);
+const cardVariants = {
+    // initial: { opacity: 0, scale: 0.95 },
+    // animate: { opacity: 1, scale: 1 },
+    // exit: { opacity: 0, scale: 0.95 },
+};
 
-    const ext = photo.name.split(".")[1];
-    const previewPath = convertFileSrc(`C:\\Users\\robik\\Pictures\\${"photo-organizer"}\\${dir.id}\\${photo.id}.preview.avif`);
+const getPreviewPath = (dirId: string, photoId: string, previewDir: string) =>
+    convertFileSrc(path.join(previewDir, dirId, photoId) + ".preview.avif");
+
+const PhotoPreview: React.FC<PhotoProps> = ({ photo, folder, index }) => {
+    const dir = useAppSelector(selectCurrentFolder);
+    const previewDir = useAppSelector(selectPreviewDir);
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const path = convertFileSrc((folder ? folder[0].path : dir.path) + "\\" + photo.name);
+    const selectedIndex = useAppSelector(selectSelectedPhotoIndex);
+
+    const previewPath = getPreviewPath(dir.id, photo.id, previewDir);
 
     const [loaded, setLoaded] = useState(false);
     const imgRef = useRef<HTMLImageElement>(null);
@@ -39,35 +55,40 @@ const PhotoPreview: React.FC<PhotoProps> = ({ photo, folder }) => {
         return () => {
             if (imgRef.current) observer.unobserve(imgRef.current);
         };
-    }, [path]);
+    }, [previewPath]);
+
+    const selectPhoto = useCallback(() => {
+        console.log(encodeURI(photo.name));
+        dispatch(setSelectedPhoto({ photo, index }));
+        navigate(encodeURI(photo.name));
+    }, [photo, navigate, index]);
 
     return (
-        <div className="p-2 flex-1 box-border">
-            <Dialog>
-                <DialogTrigger>
-                    <Card className="overflow-hidden rounded-lg shadow-md p-0 border-none">
-                        <CardContent className="p-0">
-                            <motion.img
-                                layout
-                                className={clsx("w-auto h-full aspect-3/2 object-cover scale-101", { hidden: false })}
-                                ref={imgRef}
-                                onLoad={() => setLoaded(true)}
-                                whileHover={{ scale: 1.1 }}
-                                src={previewPath}
-                                alt={photo.name}
-                                layoutId="photo"
-                                // loading="lazy"
-                            />
-                            {/*{!loaded && <Skeleton className="h-[400px] w-[400px]" />}*/}
-                        </CardContent>
-                    </Card>
-                </DialogTrigger>
-                <DialogContent className="flex justify-center items-center w-3/4">
-                    <motion.img src={path} alt={photo.name} layoutId="photo" id="photo" />
-                </DialogContent>
-            </Dialog>
-        </div>
+        <motion.div
+            className={clsx("w-full h-full p-2 flex-1 box-border", { "z-10": selectedIndex === index })}
+            variants={selectedIndex === index ? cardVariants : null}
+            layoutId={`card-${photo.id}`}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={transitionImages}
+        >
+            <Card className="w-full h-full overflow-hidden rounded-lg shadow-md p-0 border-none" onClick={selectPhoto}>
+                <CardContent className="p-0">
+                    <motion.img
+                        className={clsx("w-full h-full aspect-3/2 object-cover scale-101", { hidden: false })}
+                        ref={imgRef}
+                        onLoad={() => setLoaded(true)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        src={previewPath}
+                        alt={photo.name}
+                    />
+                    {/*{!loaded && <Skeleton className="h-[400px] w-[400px]" />}*/}
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 };
 
-export default PhotoPreview;
+export default React.memo(PhotoPreview);

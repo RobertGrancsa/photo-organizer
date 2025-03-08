@@ -1,14 +1,14 @@
-use std::fs;
 use crate::db::{DbPool, DbPoolConn};
 use crate::schema::Directory;
 use crate::services::photo::get_photos_from_directory;
 use crate::task_queue::tasks::Task;
-use image::imageops::FilterType;
-use rayon::prelude::*;
-use std::path::Path;
-use image::ImageFormat;
-use tokio::sync::mpsc;
 use crate::APP_NAME;
+use image::imageops::FilterType;
+use image::ImageFormat;
+use rayon::prelude::*;
+use std::fs;
+use std::path::Path;
+use tokio::sync::mpsc;
 
 pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: DbPool) {
     while let Some(task) = receiver.recv().await {
@@ -18,23 +18,30 @@ pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: D
                 println!("Processing message: {}", msg);
             }
             Task::CreatePreviewForPhotos(dir) => {
-                create_preview_for_photos(dir, conn).await;
+                match create_preview_for_photos(dir, conn).await {
+                    Ok(_) => {}
+                    Err(err) => {
+                        eprintln!("{}", err)
+                    }
+                };
             }
             _ => {}
         }
     }
 }
 
-pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) {
+pub async fn create_preview_for_photos(
+    dir: Directory,
+    conn: &mut DbPoolConn,
+) -> Result<(), String> {
     let photos = get_photos_from_directory(conn, dir.id);
 
     if photos.is_empty() {
         println!("No photos found in directory: {}", dir.path);
-        return;
+        return Err(format!("No photos found in directory: {}", dir.path));
     }
 
-    let local_photo_path = dirs::picture_dir()
-        .unwrap_or_else(|| Path::new(".").to_path_buf());
+    let local_photo_path = dirs::data_local_dir().unwrap_or_else(|| Path::new(".").to_path_buf());
 
     let output_folder = local_photo_path.join(APP_NAME).join(dir.id.to_string());
 
@@ -51,7 +58,7 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) {
 
         match image::open(input_path) {
             Ok(img) => {
-                let resized = img.resize(300, 300, FilterType::Lanczos3);
+                let resized = img.resize(300, 300, FilterType::CatmullRom);
                 if let Err(e) = resized.save_with_format(&output_path, ImageFormat::Avif) {
                     eprintln!("Failed to save preview for {}: {}", photo.path, e);
                 } else {
@@ -59,10 +66,11 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) {
                 }
             }
             Err(e) => {
-                eprintln!("Failed to open image {}: {}", photo.path, e);
+                eprintln!("Failed to open image {}: {}", photo.name, e);
             }
         }
     });
 
     println!("Finished processing previews for directory: {}", dir.path);
+    Ok(())
 }

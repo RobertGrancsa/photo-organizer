@@ -1,7 +1,7 @@
-use dotenvy::dotenv;
-use std::env;
 use diesel::pg::PgConnection;
 use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use dotenvy::dotenv;
+use std::env;
 pub type DbPool = Pool<ConnectionManager<PgConnection>>;
 pub type DbPoolConn = PooledConnection<ConnectionManager<PgConnection>>;
 

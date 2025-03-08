@@ -1,7 +1,7 @@
+use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
-use bigdecimal::BigDecimal;
 use uuid::Uuid;
 
 pub mod schema;
@@ -101,6 +101,4 @@ pub struct ExifMetadata {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Folders {
     pub name: String,
-
 }
-
