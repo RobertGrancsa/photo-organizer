@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run dev" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="tauri" />
+      <script value="dev" />
+    </scripts>
+    <node-interpreter value="project" />
+    <envs>
+      <env name="LIBTORCH" value="H:\Projects\photo-organizer\libtorch\Lib\site-packages\torch" />
+      <env name="LIBTORCH_USE_PYTORCH" value="1" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>

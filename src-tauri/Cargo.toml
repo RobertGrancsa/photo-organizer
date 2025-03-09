@@ -24,6 +24,7 @@ serde_json = "1"
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
+anyhow = "1.0.96"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-window-state = "2"
@@ -39,4 +40,6 @@ tokio = { version = "1.43.0", features = ["time"] }
 rayon = "1.10.0"
 image = "0.25.5"
 dirs = "6.0.0"
+anyhow = "1.0.97"
+tch = { version = "0.19.0", features = ["download-libtorch", "python-extension"] }
 

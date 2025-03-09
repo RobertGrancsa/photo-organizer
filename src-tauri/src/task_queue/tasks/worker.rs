@@ -1,14 +1,20 @@
 use crate::db::{DbPool, DbPoolConn};
+use crate::schema::schema::directories::dsl::directories;
+use crate::schema::schema::directories::is_imported;
 use crate::schema::Directory;
 use crate::services::photo::get_photos_from_directory;
+use crate::tagging::object_detection::detect_objects_batch;
 use crate::task_queue::tasks::Task;
 use crate::APP_NAME;
+use diesel::*;
 use image::imageops::FilterType;
 use image::ImageFormat;
 use rayon::prelude::*;
 use std::fs;
 use std::path::Path;
 use tokio::sync::mpsc;
+use anyhow::{anyhow, Result};
+
 
 pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: DbPool) {
     while let Some(task) = receiver.recv().await {
@@ -25,6 +31,14 @@ pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: D
                     }
                 };
             }
+            Task::DetectObjectsFromPhotos(dir, name) => {
+                match detect_objects_batch(name, dir, conn) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        eprintln!("{}", err)
+                    }
+                }
+            }
             _ => {}
         }
     }
@@ -33,12 +47,13 @@ pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: D
 pub async fn create_preview_for_photos(
     dir: Directory,
     conn: &mut DbPoolConn,
-) -> Result<(), String> {
+) -> Result<()> {
+    use crate::schema::schema::directories;
     let photos = get_photos_from_directory(conn, dir.id);
 
     if photos.is_empty() {
         println!("No photos found in directory: {}", dir.path);
-        return Err(format!("No photos found in directory: {}", dir.path));
+        return Err(anyhow!("No photos found in directory: {}", dir.path));
     }
 
     let local_photo_path = dirs::data_local_dir().unwrap_or_else(|| Path::new(".").to_path_buf());
@@ -72,5 +87,10 @@ pub async fn create_preview_for_photos(
     });
 
     println!("Finished processing previews for directory: {}", dir.path);
+
+    update(directories.filter(directories::id.eq(dir.id)))
+        .set(is_imported.eq(true))
+        .execute(conn)?;
+
     Ok(())
 }

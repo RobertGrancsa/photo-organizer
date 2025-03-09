@@ -66,6 +66,14 @@ diesel::table! {
 }
 
 diesel::table! {
+    photo_tags_mappings (id) {
+        id -> Uuid,
+        tag_id -> Int2,
+        photo_id -> Uuid,
+    }
+}
+
+diesel::table! {
     photos (id) {
         id -> Uuid,
         path -> Uuid,
@@ -74,7 +82,23 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    tags (id) {
+        id -> Int2,
+        #[max_length = 255]
+        tag -> Varchar,
+    }
+}
+
 diesel::joinable!(exif_metadata -> photos (photo_id));
+diesel::joinable!(photo_tags_mappings -> photos (photo_id));
+diesel::joinable!(photo_tags_mappings -> tags (tag_id));
 diesel::joinable!(photos -> directories (path));
 
-diesel::allow_tables_to_appear_in_same_query!(directories, exif_metadata, photos,);
+diesel::allow_tables_to_appear_in_same_query!(
+    directories,
+    exif_metadata,
+    photo_tags_mappings,
+    photos,
+    tags,
+);

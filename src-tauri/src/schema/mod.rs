@@ -24,7 +24,7 @@ pub struct NewDirectory {
     pub path: String,
 }
 
-#[derive(Queryable, Selectable, Serialize, Insertable)]
+#[derive(Queryable, Selectable, Serialize, Insertable, Clone)]
 #[diesel(table_name = crate::schema::schema::photos)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Photo {
@@ -101,4 +101,12 @@ pub struct ExifMetadata {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Folders {
     pub name: String,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = crate::schema::schema::photo_tags_mappings)]
+pub struct NewPhotoTagMapping {
+    pub id: Uuid,
+    pub tag_id: i16,
+    pub photo_id: Uuid,
 }

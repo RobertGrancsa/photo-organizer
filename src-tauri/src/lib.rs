@@ -2,6 +2,7 @@ pub mod commands;
 pub mod db;
 pub mod schema;
 pub mod services;
+pub mod tagging;
 pub mod task_queue;
 
 use crate::commands::commands::{add_folder, get_folders, get_photos_from_path};
