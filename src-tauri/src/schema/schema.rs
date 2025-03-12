@@ -7,6 +7,7 @@ diesel::table! {
         path -> Varchar,
         is_imported -> Bool,
         added_time -> Timestamp,
+        photo_count -> Int4,
     }
 }
 

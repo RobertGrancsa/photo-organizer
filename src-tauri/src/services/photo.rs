@@ -20,7 +20,7 @@ fn is_photo(file_path: &Path) -> bool {
 pub fn insert_photos_from_directory(
     conn: &mut DbPoolConn,
     dir: &Directory,
-) -> Result<(), diesel::result::Error> {
+) -> Result<usize, diesel::result::Error> {
     let photo_entries: Vec<Photo> = WalkDir::new(&dir.path)
         .into_iter()
         .filter_map(|entry| entry.ok()) // Ignore errors
@@ -38,7 +38,7 @@ pub fn insert_photos_from_directory(
         .execute(conn)?;
 
     println!("Inserted {} photos into the database.", photo_entries.len());
-    Ok(())
+    Ok(photo_entries.len())
 }
 
 pub fn get_photos_from_directory(conn: &mut DbPoolConn, path_uuid: Uuid) -> Vec<Photo> {

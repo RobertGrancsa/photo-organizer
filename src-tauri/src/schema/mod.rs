@@ -15,6 +15,7 @@ pub struct Directory {
     pub path: String,
     pub is_imported: bool,
     pub added_time: NaiveDateTime,
+    pub photo_count: i32,
 }
 
 #[derive(Insertable)]
@@ -22,6 +23,7 @@ pub struct Directory {
 pub struct NewDirectory {
     pub id: Uuid,
     pub path: String,
+    pub photo_count: i32,
 }
 
 #[derive(Queryable, Selectable, Serialize, Insertable, Clone)]

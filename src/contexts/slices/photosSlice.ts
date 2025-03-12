@@ -47,5 +47,15 @@ export const selectCurrentPhoto = createSelector(selectSelectedPhoto, selectSele
     photo: photo,
     index: index,
 }));
+export const selectNextPhoto = createSelector(selectPhotos, selectSelectedPhotoIndex, (photos, index) => ({
+    photo: photos[index + 1],
+    index: index + 1,
+}));
+export const selectPrevPhoto = createSelector(selectPhotos, selectSelectedPhotoIndex, (photos, index) => ({
+    photo: photos[index - 1],
+    index: index - 1,
+}));
+
+export const selectPhotoWithNeighbours = createSelector(selectCurrentPhoto, selectNextPhoto, selectPrevPhoto, (b, c, a) => [a, b, c]);
 
 export default photosSlice.reducer;
