@@ -25,7 +25,7 @@ const cardVariants = {
 };
 
 const getPreviewPath = (dirId: string, photoId: string, previewDir: string) =>
-    convertFileSrc(path.join(previewDir, dirId, photoId) + ".preview.avif");
+    convertFileSrc(path.join(previewDir, dirId, photoId) + ".preview.webp");
 
 const PhotoPreview: React.FC<PhotoProps> = ({ photo, folder, index }) => {
     const dir = useAppSelector(selectCurrentFolder);

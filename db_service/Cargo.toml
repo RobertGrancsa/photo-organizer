@@ -1,0 +1,15 @@
+[package]
+name = "db_service"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dotenvy = "0.15"
+diesel = { version = "2.2.0", features = ["postgres", "postgres_backend", "r2d2", "64-column-tables", "uuid", "numeric", "chrono"] }
+chrono = { version = "0.4.39", features = ["serde"] }
+bigdecimal = { version = "0.4.7", features = ["serde"] }
+uuid = { version = "1.14.0", features = ["v4", "serde"] }
+serde = { version = "1", features = ["derive"] }
+walkdir = "2.5"
+anyhow = "1.0.97"
+serde_yaml = "0.9"

@@ -1,4 +1,4 @@
-use crate::schema::Directory;
+use db_service::schema::Directory;
 
 pub mod worker;
 pub mod pre_initialization;

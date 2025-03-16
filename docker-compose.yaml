@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: photo-app
+      POSTGRES_PASSWORD: d13s3l-ph0to
+      POSTGRES_DB: photo_app_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - db-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "photo-app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  tagging_service:
+    build:
+      context: .
+      dockerfile: tagging_service/Dockerfile
+      target: development
+    environment:
+      - RUST_LOG=debug
+      - DATABASE_URL=postgres://photo-app:d13s3l-ph0to@db:5432/photo_app_db
+    volumes:
+      - ./tagging_service/src:/tagging_service/src
+      - ./tagging_service/Cargo.toml:/tagging_service/Cargo.toml
+      - ./db_service/src:/db_service/src
+      - ./db_service/Cargo.toml:/db_service/Cargo.toml
+      - backend-cache:/tagging_service/target
+      - ${LocalAppData:-${HOME}/.local/share}/photo-organizer:/tagging_service/data/photo-organizer
+    depends_on:
+      - db
+    networks:
+      - db-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+
+volumes:
+  pgdata: {}
+  backend-cache: {}
+
+networks:
+  db-network:

@@ -1,12 +1,8 @@
 pub mod commands;
-pub mod db;
-pub mod schema;
-pub mod services;
-pub mod tagging;
 pub mod task_queue;
 
 use crate::commands::commands::{add_folder, get_folders, get_photos_from_path};
-use crate::db::init_pool;
+use db_service::db::init_pool;
 use crate::task_queue::tasks::worker::task_worker;
 use crate::task_queue::TaskQueue;
 use std::sync::Arc;

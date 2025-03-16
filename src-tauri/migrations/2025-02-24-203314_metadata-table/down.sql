@@ -1,1 +1,0 @@
-DROP TABLE exif_metadata;

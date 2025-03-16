@@ -1,9 +1,8 @@
-use crate::db::{DbPool, DbPoolConn};
-use crate::schema::schema::directories::dsl::directories;
-use crate::schema::schema::directories::is_imported;
-use crate::schema::Directory;
-use crate::services::photo::get_photos_from_directory;
-use crate::tagging::object_detection::detect_objects_batch;
+use db_service::db::{DbPool, DbPoolConn};
+use db_service::schema::schema::directories::dsl::directories;
+use db_service::schema::schema::directories::is_imported;
+use db_service::schema::Directory;
+use db_service::services::photo::get_photos_from_directory;
 use crate::task_queue::tasks::Task;
 use crate::APP_NAME;
 use diesel::*;
@@ -31,14 +30,9 @@ pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: D
                     }
                 };
             }
-            Task::DetectObjectsFromPhotos(dir, name) => {
-                match detect_objects_batch(name, dir, conn) {
-                    Ok(_) => {}
-                    Err(err) => {
-                        eprintln!("{}", err)
-                    }
-                }
-            }
+            // Task::DetectObjectsFromPhotos(dir, name) => {
+            //
+            // }
             _ => {}
         }
     }
@@ -48,7 +42,7 @@ pub async fn create_preview_for_photos(
     dir: Directory,
     conn: &mut DbPoolConn,
 ) -> Result<()> {
-    use crate::schema::schema::directories;
+    use db_service::schema::schema::directories;
     let photos = get_photos_from_directory(conn, dir.id);
 
     if photos.is_empty() {
@@ -69,12 +63,12 @@ pub async fn create_preview_for_photos(
             return;
         }
 
-        let output_path = output_folder.join(format!("{}.preview.{}", photo.id, "avif"));
+        let output_path = output_folder.join(format!("{}.preview.{}", photo.id, "webp"));
 
         match image::open(input_path) {
             Ok(img) => {
-                let resized = img.resize(300, 300, FilterType::CatmullRom);
-                if let Err(e) = resized.save_with_format(&output_path, ImageFormat::Avif) {
+                let resized = img.resize(640, 640, FilterType::CatmullRom);
+                if let Err(e) = resized.save_with_format(&output_path, ImageFormat::WebP) {
                     eprintln!("Failed to save preview for {}: {}", photo.path, e);
                 } else {
                     println!("Preview saved at {:?}", output_path);

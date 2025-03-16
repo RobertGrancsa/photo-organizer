@@ -1,7 +1,7 @@
-use crate::db::DbPool;
-use crate::schema::schema::directories::dsl::directories;
-use crate::schema::{Directory, NewDirectory, Photo};
-use crate::services::photo::{get_photos_from_directory, insert_photos_from_directory};
+use db_service::db::DbPool;
+use db_service::schema::schema::directories::dsl::directories;
+use db_service::schema::{Directory, NewDirectory, Photo};
+use db_service::services::photo::{get_photos_from_directory, insert_photos_from_directory};
 use std::sync::Arc;
 
 use crate::task_queue::tasks::Task;
@@ -10,15 +10,13 @@ use diesel::prelude::*;
 use tauri::State;
 use tokio::sync::Mutex;
 use uuid::Uuid;
+use db_service::services::directory::get_directories;
 
 #[tauri::command]
-pub fn get_folders(pool: State<DbPool>) -> Vec<Directory> {
-    let conn = &mut pool.get().expect("Should be connected to the db");
+pub fn get_folders(pool: State<DbPool>) -> Result<Vec<Directory>, String> {
+    let conn = &mut pool.get().map_err(|err| err.to_string())?;
 
-    directories
-        .select(Directory::as_select())
-        .load::<Directory>(conn)
-        .expect("We have files")
+    get_directories(conn).map_err(|err| err.to_string())
 }
 
 #[tauri::command]
@@ -27,7 +25,7 @@ pub async fn add_folder(
     state: State<'_, Arc<Mutex<TaskQueue>>>,
     path: &str,
 ) -> Result<Directory, String> {
-    use crate::schema::schema::directories;
+    use db_service::schema::schema::directories;
     let conn = &mut pool.get().map_err(|e| e.to_string())?;
 
     let new_dir = NewDirectory {
@@ -52,7 +50,7 @@ pub async fn add_folder(
 
 #[tauri::command]
 pub fn get_photos_from_path(pool: State<DbPool>, path: &str) -> Vec<Photo> {
-    use crate::schema::schema::directories;
+    use db_service::schema::schema::directories;
     let conn = &mut pool.get().expect("Should be connected to the db");
 
     // Get the UUID for the given directory path
