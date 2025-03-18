@@ -3,7 +3,7 @@ use anyhow::Result;
 use db_service::db::DbPoolConn;
 use db_service::schema::{Directory, Photo};
 use db_service::services::photo::get_photos_from_directory;
-use db_service::services::tags::{insert_photo_tags_mappings, Detection};
+use db_service::services::tags::{Detection, insert_photo_tags_mappings};
 use rayon::prelude::*;
 use std::path::Path;
 use std::sync::Arc;
@@ -124,7 +124,10 @@ pub fn detect_objects_for_image(preview_path: &str, model: &CModule) -> Result<V
     // Run the model.
     let output = model.forward_ts(&[input_tensor])?;
     // Move output to CPU and remove the batch dimension.
-    let output = output.to_device(Device::Cpu).squeeze_dim(0);
+    let output = output
+        .to_device(Device::Cpu)
+        .squeeze_dim(0)
+        .permute(&[1, 0]);
 
     // Get the number of predictions. We assume each prediction has 6 values.
     let num_predictions = output.size()[0] as usize;
@@ -168,7 +171,6 @@ pub fn detect_objects_for_image(preview_path: &str, model: &CModule) -> Result<V
 }
 
 /// Process a vector of preview image paths using the YOLO11n.pt model.
-/// Returns a vector of tuples: (preview_path, detections)
 pub fn detect_objects_batch(
     model_path: String,
     directory: Directory,

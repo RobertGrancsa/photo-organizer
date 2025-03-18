@@ -27,4 +27,4 @@ COPY tagging_service /tagging_service
 
 FROM base AS development
 
-CMD [ "cargo", "run", "--offline" ]
+CMD [ "cargo", "run" ]

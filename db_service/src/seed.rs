@@ -1,10 +1,10 @@
-use diesel::prelude::*;
-use serde::Deserialize;
-use std::fs;
-use std::collections::HashMap;
 use crate::db::DbPoolConn;
 use crate::schema::Tag;
 use anyhow::Result;
+use diesel::prelude::*;
+use serde::Deserialize;
+use std::collections::HashMap;
+use std::fs;
 
 #[derive(Deserialize)]
 pub struct DatasetYaml {

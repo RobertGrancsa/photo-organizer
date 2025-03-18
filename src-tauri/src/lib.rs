@@ -2,9 +2,9 @@ pub mod commands;
 pub mod task_queue;
 
 use crate::commands::commands::{add_folder, get_folders, get_photos_from_path};
-use db_service::db::init_pool;
 use crate::task_queue::tasks::worker::task_worker;
 use crate::task_queue::TaskQueue;
+use db_service::db::init_pool;
 use std::sync::Arc;
 use tauri::Manager;
 use tokio::sync::Mutex;

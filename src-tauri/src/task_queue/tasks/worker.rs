@@ -1,10 +1,11 @@
+use crate::task_queue::tasks::Task;
+use crate::APP_NAME;
+use anyhow::{anyhow, Result};
 use db_service::db::{DbPool, DbPoolConn};
 use db_service::schema::schema::directories::dsl::directories;
 use db_service::schema::schema::directories::is_imported;
 use db_service::schema::Directory;
 use db_service::services::photo::get_photos_from_directory;
-use crate::task_queue::tasks::Task;
-use crate::APP_NAME;
 use diesel::*;
 use image::imageops::FilterType;
 use image::ImageFormat;
@@ -12,8 +13,6 @@ use rayon::prelude::*;
 use std::fs;
 use std::path::Path;
 use tokio::sync::mpsc;
-use anyhow::{anyhow, Result};
-
 
 pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: DbPool) {
     while let Some(task) = receiver.recv().await {
@@ -38,10 +37,7 @@ pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: D
     }
 }
 
-pub async fn create_preview_for_photos(
-    dir: Directory,
-    conn: &mut DbPoolConn,
-) -> Result<()> {
+pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) -> Result<()> {
     use db_service::schema::schema::directories;
     let photos = get_photos_from_directory(conn, dir.id);
 

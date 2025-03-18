@@ -6,11 +6,11 @@ use std::sync::Arc;
 
 use crate::task_queue::tasks::Task;
 use crate::task_queue::TaskQueue;
+use db_service::services::directory::get_directories;
 use diesel::prelude::*;
 use tauri::State;
 use tokio::sync::Mutex;
 use uuid::Uuid;
-use db_service::services::directory::get_directories;
 
 #[tauri::command]
 pub fn get_folders(pool: State<DbPool>) -> Result<Vec<Directory>, String> {

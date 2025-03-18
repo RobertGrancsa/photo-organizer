@@ -13,7 +13,7 @@ services:
     networks:
       - db-network
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "photo-app"]
+      test: ["CMD", "pg_isready", "-d", "photo_app_db"]
       interval: 10s
       timeout: 5s
       retries: 5

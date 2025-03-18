@@ -10,3 +10,8 @@ tch = "0.19.0"
 anyhow = "1.0.97"
 image = { version = "0.25.5", features = [] }
 rayon = "1.10.0"
+
+ort = { version = "2.0.0-rc.9", features = ["cuda"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = [ "env-filter", "fmt" ] }
+yolo-rs = "0.1.1"
