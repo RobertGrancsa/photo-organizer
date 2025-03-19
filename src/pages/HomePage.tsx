@@ -7,7 +7,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import Sidebar from "@/components/Sidebar";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { selectCurrentFolder, selectPreviewDir } from "@/contexts/slices/pathSlice";
-import { setPhotos } from "@/contexts/slices/photosSlice";
+import { selectSelectedTags, setPhotos } from "@/contexts/slices/photosSlice";
 import { Outlet } from "react-router";
 import useIsInitialized from "@/contexts/FoldersContext";
 
@@ -17,17 +17,22 @@ const HomePage = () => {
     const dispatch = useAppDispatch();
     const folder = useAppSelector(selectCurrentFolder);
     const previewPath = useAppSelector(selectPreviewDir);
-    const { isFetched, data: loadedPhotos } = useQuery({
-        queryKey: ["photos", folder.path],
-        queryFn: () => getPhotosAtPath(folder.path),
+    const selectedTags = useAppSelector(selectSelectedTags);
+    const { data: loadedPhotos } = useQuery({
+        queryKey: ["photos", folder.path, selectedTags],
+        queryFn: () => getPhotosAtPath(folder.path, Array.from(selectedTags)),
         enabled: !!folder.id,
     });
 
     useEffect(() => {
+        if (!loadedPhotos) {
+            return;
+        }
+
         dispatch(setPhotos(loadedPhotos));
     }, [loadedPhotos]);
 
-    if (!isFetched || !previewPath) {
+    if (!previewPath) {
         return <LoadingPage />;
     }
 

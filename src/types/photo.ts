@@ -3,3 +3,8 @@ export interface Photo {
     path: string;
     name: string;
 }
+
+export interface PhotoData {
+    photos: Photo[];
+    tags: string[];
+}

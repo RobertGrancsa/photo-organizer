@@ -37,7 +37,7 @@ pub fn insert_photos_from_directory(
         .values(&photo_entries)
         .execute(conn)?;
 
-    println!("Inserted {} photos into the database.", photo_entries.len());
+    tracing::info!("Inserted {} photos into the database.", photo_entries.len());
     Ok(photo_entries.len())
 }
 
@@ -48,7 +48,29 @@ pub fn get_photos_from_directory(conn: &mut DbPoolConn, path_uuid: Uuid) -> Vec<
         .filter(photos::path.eq(&path_uuid))
         .load::<Photo>(conn)
         .unwrap_or_else(|err| {
-            eprintln!("Error retrieving photos: {:?}", err);
+            tracing::error!("Error retrieving photos: {:?}", err);
             vec![]
         })
+}
+
+pub fn get_photos_filtered(
+    conn: &mut DbPoolConn,
+    path_uuid: Uuid,
+    tag_filters: Vec<String>,
+) -> QueryResult<Vec<Photo>> {
+    use crate::schema::schema::{photo_tags_mappings, photos};
+
+    let mut query = photos::table
+        .inner_join(photo_tags_mappings::table.on(photo_tags_mappings::photo_id.eq(photos::id)))
+        .filter(photos::path.eq(path_uuid))
+        .into_boxed();
+
+    // Only add tag filters if they are provided.
+    if !tag_filters.is_empty() {
+        query = query.filter(photo_tags_mappings::tag.eq_any(&tag_filters));
+    }
+
+    let results = query.select(photos::all_columns).load::<Photo>(conn)?;
+
+    Ok(results)
 }

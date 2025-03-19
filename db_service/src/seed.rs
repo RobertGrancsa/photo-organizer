@@ -13,11 +13,11 @@ pub struct DatasetYaml {
 
 pub fn insert_tags_from_yaml(conn: &mut DbPoolConn, yaml_path: &str) -> Result<()> {
     use crate::schema::schema::tags::dsl::*;
-    println!("Inserting tags into yaml");
+    tracing::info!("Inserting tags into yaml");
 
     let count: i64 = tags.count().get_result(conn)?;
     if count > 0 {
-        println!("Tags table already populated. Skipping...");
+        tracing::info!("Tags table already populated. Skipping...");
         return Ok(());
     }
 

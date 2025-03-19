@@ -12,6 +12,7 @@
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-hover-card": "^1.1.6",
     "@radix-ui/react-progress": "^1.1.2",
     "@radix-ui/react-scroll-area": "^1.2.3",
     "@radix-ui/react-slider": "^1.2.3",
@@ -31,6 +32,7 @@
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.5.2",
     "framer-motion": "^12.4.10",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.475.0",
     "motion": "^12.4.7",
     "path-browserify": "^1.0.1",
@@ -48,6 +50,7 @@
     "@eslint/js": "^9.21.0",
     "@tanstack/eslint-plugin-query": "^5.66.1",
     "@tauri-apps/cli": "^2",
+    "@types/lodash": "^4.17.16",
     "@types/node": "^22.13.5",
     "@types/path-browserify": "^1.0.3",
     "@types/react": "^18.3.1",

@@ -14,7 +14,6 @@ import { transitionImages } from "@/lib/animations";
 
 interface PhotoProps {
     photo: Photo;
-    folder?: Folder;
     index: number;
 }
 
@@ -27,13 +26,11 @@ const cardVariants = {
 const getPreviewPath = (dirId: string, photoId: string, previewDir: string) =>
     convertFileSrc(path.join(previewDir, dirId, photoId) + ".preview.webp");
 
-const PhotoPreview: React.FC<PhotoProps> = ({ photo, folder, index }) => {
+const PhotoPreview: React.FC<PhotoProps> = ({ photo, index }) => {
     const dir = useAppSelector(selectCurrentFolder);
     const previewDir = useAppSelector(selectPreviewDir);
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const path = convertFileSrc((folder ? folder[0].path : dir.path) + "\\" + photo.name);
-    const selectedIndex = useAppSelector(selectSelectedPhotoIndex);
 
     const previewPath = getPreviewPath(dir.id, photo.id, previewDir);
 
@@ -58,36 +55,25 @@ const PhotoPreview: React.FC<PhotoProps> = ({ photo, folder, index }) => {
     }, [previewPath]);
 
     const selectPhoto = useCallback(() => {
-        console.log(encodeURI(photo.name));
         dispatch(setSelectedPhoto({ photo, index }));
         navigate(encodeURI(photo.name));
     }, [photo, navigate, index]);
 
     return (
-        <motion.div
-            className={clsx("w-full h-full p-2 flex-1 box-border", { "z-10": selectedIndex === index })}
-            variants={selectedIndex === index ? cardVariants : null}
-            layoutId={`card-${photo.id}`}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            transition={transitionImages}
-        >
-            <Card className="w-full h-full overflow-hidden rounded-lg shadow-md p-0 border-none" onClick={selectPhoto}>
-                <CardContent className="p-0">
-                    <motion.img
-                        className={clsx("w-full h-full aspect-3/2 object-cover scale-101", { hidden: false })}
-                        ref={imgRef}
-                        onLoad={() => setLoaded(true)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        src={previewPath}
-                        alt={photo.name}
-                    />
-                    {/*{!loaded && <Skeleton className="h-[400px] w-[400px]" />}*/}
-                </CardContent>
-            </Card>
-        </motion.div>
+        <Card className="w-full h-full overflow-hidden rounded-lg shadow-md p-0 border-none" onClick={selectPhoto}>
+            <CardContent className="p-0">
+                <motion.img
+                    className={clsx("w-full h-full aspect-3/2 object-cover scale-101", { hidden: false })}
+                    ref={imgRef}
+                    onLoad={() => setLoaded(true)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    src={previewPath}
+                    alt={photo.name}
+                />
+                {/*{!loaded && <Skeleton className="h-[400px] w-[400px]" />}*/}
+            </CardContent>
+        </Card>
     );
 };
 

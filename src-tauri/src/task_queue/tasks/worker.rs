@@ -25,7 +25,7 @@ pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: D
                 match create_preview_for_photos(dir, conn).await {
                     Ok(_) => {}
                     Err(err) => {
-                        eprintln!("{}", err)
+                        tracing::error!("{}", err)
                     }
                 };
             }
@@ -55,7 +55,7 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) ->
     photos.par_iter().for_each(|photo| {
         let input_path = Path::new(&dir.path).join(&photo.name);
         if !input_path.exists() {
-            eprintln!("File not found: {:?}", input_path);
+            tracing::error!("File not found: {:?}", input_path);
             return;
         }
 
@@ -65,18 +65,18 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) ->
             Ok(img) => {
                 let resized = img.resize(640, 640, FilterType::CatmullRom);
                 if let Err(e) = resized.save_with_format(&output_path, ImageFormat::WebP) {
-                    eprintln!("Failed to save preview for {}: {}", photo.path, e);
+                    tracing::error!("Failed to save preview for {}: {}", photo.path, e);
                 } else {
-                    println!("Preview saved at {:?}", output_path);
+                    tracing::debug!("Preview saved at {:?}", output_path);
                 }
             }
             Err(e) => {
-                eprintln!("Failed to open image {}: {}", photo.name, e);
+                tracing::error!("Failed to open image {}: {}", photo.name, e);
             }
         }
     });
 
-    println!("Finished processing previews for directory: {}", dir.path);
+    tracing::info!("Finished processing previews for directory: {}", dir.path);
 
     update(directories.filter(directories::id.eq(dir.id)))
         .set(is_imported.eq(true))

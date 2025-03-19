@@ -69,7 +69,8 @@ diesel::table! {
 diesel::table! {
     photo_tags_mappings (id) {
         id -> Uuid,
-        tag_id -> Int2,
+        #[max_length = 255]
+        tag -> Varchar,
         photo_id -> Uuid,
     }
 }
@@ -93,7 +94,6 @@ diesel::table! {
 
 diesel::joinable!(exif_metadata -> photos (photo_id));
 diesel::joinable!(photo_tags_mappings -> photos (photo_id));
-diesel::joinable!(photo_tags_mappings -> tags (tag_id));
 diesel::joinable!(photos -> directories (path));
 
 diesel::allow_tables_to_appear_in_same_query!(

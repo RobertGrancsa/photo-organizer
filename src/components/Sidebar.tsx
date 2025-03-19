@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getFolders } from "@/lib/api";
 import { Folder as FolderType, Photo } from "@/types";
 import ImportFolder from "@/components/folders/ImportFolder";
-import { clearSelectedPhotos } from "@/contexts/slices/photosSlice";
+import { clearSelectedPhotos, clearSelectedTags } from "@/contexts/slices/photosSlice";
 import { useNavigate } from "react-router";
 
 const ELEMENTS = [
@@ -86,6 +86,7 @@ const Sidebar: React.FC = () => {
                     value={item.id}
                     onClick={() => {
                         dispatch(setPath(item));
+                        dispatch(clearSelectedTags());
                         dispatch(clearSelectedPhotos());
                         navigate("/" + item.id);
                     }}

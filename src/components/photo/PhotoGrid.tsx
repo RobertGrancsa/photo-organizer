@@ -1,11 +1,11 @@
 import * as React from "react";
 import { UIEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import { Photo } from "@/types";
-import PhotoPreview from "@/components/photo/PhotoPreview";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { LayoutGroup } from "framer-motion";
 import { useAppSelector } from "@/lib/hooks";
 import { selectCurrentPhoto } from "@/contexts/slices/photosSlice";
+import PhotoWithHover from "@/components/photo/PhotoWithHover";
 
 interface PhotoGridProps {
     photos: Photo[];
@@ -22,7 +22,7 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, columnCount = 3 }) => {
         setInitialOffset(savedScrollOffset ? Number(savedScrollOffset) : 0);
     }, [selectedPhoto]);
 
-    const rowCount = Math.ceil(photos.length / columnCount);
+    const rowCount = Math.ceil(photos?.length / columnCount);
 
     const calculateHeight = useCallback(() => {
         if (!parentRef.current) {
@@ -52,6 +52,10 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, columnCount = 3 }) => {
         sessionStorage.setItem("galleryScrollOffset", e.currentTarget.scrollTop.toString());
     };
 
+    if (!photos?.length) {
+        return null;
+    }
+
     return (
         <LayoutGroup>
             <div ref={parentRef} className="h-screen overflow-auto relative" onScroll={updateIfScrolling}>
@@ -69,7 +73,7 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, columnCount = 3 }) => {
                                 {Array.from({ length: columnCount }).map((_, columnIndex) => {
                                     const photoIndex = rowIndex * columnCount + columnIndex;
                                     const photo = photos[photoIndex];
-                                    return photo ? <PhotoPreview key={photoIndex} photo={photo} index={photoIndex} /> : null;
+                                    return photo ? <PhotoWithHover key={photoIndex} photo={photo} index={photoIndex} /> : null;
                                 })}
                             </div>
                         );

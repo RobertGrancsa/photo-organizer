@@ -845,6 +845,7 @@ dependencies = [
  "dotenvy",
  "serde",
  "serde_yaml",
+ "tracing",
  "uuid",
  "walkdir",
 ]
@@ -3151,6 +3152,7 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-window-state",
  "tokio",
+ "tracing",
  "uuid",
 ]
 

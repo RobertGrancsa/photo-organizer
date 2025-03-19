@@ -34,6 +34,7 @@ diesel = { version = "2.2.0", features = ["postgres", "postgres_backend", "r2d2"
 chrono = { version = "0.4.39", features = ["serde"] }
 bigdecimal = { version = "0.4.7", features = ["serde"] }
 uuid = { version = "1.14.0", features = ["v4"] }
+tracing = "0.1.41"
 
 tokio = { version = "1.43.0", features = ["time"] }
 rayon = "1.10.0"

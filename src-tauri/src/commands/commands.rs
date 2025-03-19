@@ -1,16 +1,19 @@
-use db_service::db::DbPool;
-use db_service::schema::schema::directories::dsl::directories;
-use db_service::schema::{Directory, NewDirectory, Photo};
-use db_service::services::photo::{get_photos_from_directory, insert_photos_from_directory};
+use diesel::*;
 use std::sync::Arc;
-
-use crate::task_queue::tasks::Task;
-use crate::task_queue::TaskQueue;
-use db_service::services::directory::get_directories;
-use diesel::prelude::*;
 use tauri::State;
 use tokio::sync::Mutex;
 use uuid::Uuid;
+
+use crate::commands::types::PhotoData;
+use crate::task_queue::tasks::Task;
+use crate::task_queue::TaskQueue;
+use db_service::db::DbPool;
+use db_service::schema::schema::directories::dsl::directories;
+use db_service::schema::schema::directories::photo_count;
+use db_service::schema::{Directory, NewDirectory};
+use db_service::services::directory::get_directories;
+use db_service::services::photo::{get_photos_filtered, insert_photos_from_directory};
+use db_service::services::tags::get_unique_filters;
 
 #[tauri::command]
 pub fn get_folders(pool: State<DbPool>) -> Result<Vec<Directory>, String> {
@@ -40,8 +43,14 @@ pub async fn add_folder(
         .get_result(conn)
         .expect("Error saving dir");
 
-    let photo_count = insert_photos_from_directory(conn, &dir_record).map_err(|e| e.to_string())?;
+    let inserted_photo_count =
+        insert_photos_from_directory(conn, &dir_record).map_err(|e| e.to_string())?;
     let queue = state.lock().await;
+
+    update(directories.filter(directories::id.eq(dir_record.id)))
+        .set(photo_count.eq(inserted_photo_count as i32))
+        .execute(conn)
+        .map_err(|e| e.to_string())?;
 
     queue.add_task(Task::CreatePreviewForPhotos(dir_record.clone()));
 
@@ -49,7 +58,11 @@ pub async fn add_folder(
 }
 
 #[tauri::command]
-pub fn get_photos_from_path(pool: State<DbPool>, path: &str) -> Vec<Photo> {
+pub fn get_photos_from_path(
+    pool: State<DbPool>,
+    path: &str,
+    tag_filters: Vec<String>,
+) -> Result<PhotoData, String> {
     use db_service::schema::schema::directories;
     let conn = &mut pool.get().expect("Should be connected to the db");
 
@@ -64,10 +77,16 @@ pub fn get_photos_from_path(pool: State<DbPool>, path: &str) -> Vec<Photo> {
     let path_uuid = match path_uuid {
         Some(uuid) => uuid,
         None => {
-            eprintln!("No UUID found for path: {}", path);
-            return vec![];
+            tracing::error!("No UUID found for path: {}", path);
+            return Ok(PhotoData {
+                photos: vec![],
+                tags: vec![],
+            });
         }
     };
 
-    get_photos_from_directory(conn, path_uuid)
+    Ok(PhotoData {
+        photos: get_photos_filtered(conn, path_uuid, tag_filters).map_err(|e| e.to_string())?,
+        tags: get_unique_filters(conn, path_uuid).map_err(|e| e.to_string())?,
+    })
 }

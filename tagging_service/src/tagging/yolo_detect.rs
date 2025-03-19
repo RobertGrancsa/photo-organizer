@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use crate::APP_NAME;
 use anyhow::{Context, Result};
 use db_service::db::DbPoolConn;
@@ -13,7 +14,7 @@ use yolo_rs::{YoloEntityOutput, image_to_yolo_input_tensor, inference};
 pub fn detect_objects_for_image(
     preview_path: &str,
     model: &YoloModelSession,
-) -> Result<Vec<Detection>> {
+) -> Result<HashSet<Detection>> {
     tracing::info!("Loading image {:?}…", preview_path);
     let original_img = image::open(&preview_path)
         .with_context(|| format!("failed to open image {:?}", preview_path))?;
@@ -29,7 +30,7 @@ pub fn detect_objects_for_image(
 
     tracing::debug!("Drawing bounding boxes…");
     let (img_width, img_height) = (original_img.width(), original_img.height());
-    let mut tags = Vec::new();
+    let mut tags = HashSet::new();
 
     for YoloEntityOutput {
         bounding_box: bbox,
@@ -47,9 +48,9 @@ pub fn detect_objects_for_image(
             bbox.y2
         );
 
-        tags.push(Detection {
+        tags.insert(Detection {
             label: label.to_string(),
-            class_idx: 0,
+            // bbox: [bbox.x1, bbox.y1, bbox.x2, bbox.y2],
         });
     }
 
@@ -82,7 +83,7 @@ pub fn detect_objects_batch(
         .join(directory.id.to_string());
 
     // Process images in parallel using Rayon.
-    let results: Vec<(&Photo, Vec<Detection>)> = photos
+    let results: Vec<(&Photo, HashSet<Detection>)> = photos
         .par_iter()
         .map(|photo| {
             // Clone the Arc pointer for each thread.
@@ -90,7 +91,7 @@ pub fn detect_objects_batch(
             let preview = output_folder.join(format!("{}.preview.{}", photo.id, "webp"));
             let preview_path = match preview.to_str() {
                 Some(path) => path,
-                None => return (photo, Vec::new()),
+                None => return (photo, HashSet::new()),
             };
 
             // Attempt to process the image. If an error occurs, return an empty detection list.
@@ -98,7 +99,7 @@ pub fn detect_objects_batch(
                 Ok(detections) => (photo, detections),
                 Err(err) => {
                     tracing::error!("Error processing {}: {}", preview_path, err);
-                    (photo, Vec::new())
+                    (photo, HashSet::new())
                 }
             }
         })

@@ -26,7 +26,7 @@ pub struct NewDirectory {
     pub photo_count: i32,
 }
 
-#[derive(Queryable, Selectable, Serialize, Insertable, Clone)]
+#[derive(Queryable, Selectable, Deserialize, Serialize, Insertable, Clone)]
 #[diesel(table_name = crate::schema::schema::photos)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Photo {
@@ -34,6 +34,14 @@ pub struct Photo {
     pub path: Uuid,
     pub name: String,
 }
+
+// #[derive(Selectable, Deserialize, Serialize)]
+// pub struct PhotoWithTags {
+//     pub id: Uuid,
+//     pub path: Uuid,
+//     pub name: String,
+//     pub tags: Vec<NewPhotoTagMapping>,
+// }
 
 #[derive(Queryable, Selectable, Serialize)]
 #[diesel(table_name = crate::schema::schema::exif_metadata)]
@@ -105,17 +113,17 @@ pub struct Folders {
     pub name: String,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Serialize, Deserialize)]
 #[diesel(table_name = crate::schema::schema::photo_tags_mappings)]
 pub struct NewPhotoTagMapping {
     pub id: Uuid,
-    pub tag_id: i16,
+    pub tag: String,
     pub photo_id: Uuid,
 }
 
-#[derive(Insertable, Selectable)]
+#[derive(Insertable, Deserialize, Selectable)]
 #[diesel(table_name = crate::schema::schema::tags)]
 pub struct Tag {
-    pub(crate) id: i16,
-    pub(crate) tag: String,
+    pub id: i16,
+    pub tag: String,
 }

@@ -2,7 +2,6 @@ use crate::tagging::yolo_detect::detect_objects_batch;
 use anyhow::Result;
 use db_service::db::DbPoolConn;
 use db_service::services::directory::get_directories;
-use tracing::trace;
 
 pub fn tagging_task(conn: &mut DbPoolConn) -> Result<()> {
     let un_processed_dirs = get_directories(conn)?;
