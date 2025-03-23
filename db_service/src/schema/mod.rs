@@ -16,6 +16,8 @@ pub struct Directory {
     pub is_imported: bool,
     pub added_time: NaiveDateTime,
     pub photo_count: i32,
+    pub is_tagged: bool,
+    pub is_face_tagging_done: bool,
 }
 
 #[derive(Insertable)]

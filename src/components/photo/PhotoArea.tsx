@@ -40,7 +40,7 @@ const PhotoArea: React.FC = () => {
                 />
             </div>
             {filtersOpen && <TagFilters />}
-            <PhotoGrid photos={photos} columnCount={gridSize[0]} />;
+            <PhotoGrid photos={photos} columnCount={gridSize[0]} />
         </>
     );
 };

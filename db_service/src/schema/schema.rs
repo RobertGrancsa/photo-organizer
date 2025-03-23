@@ -8,6 +8,8 @@ diesel::table! {
         is_imported -> Bool,
         added_time -> Timestamp,
         photo_count -> Int4,
+        is_tagged -> Bool,
+        is_face_tagging_done -> Bool,
     }
 }
 

@@ -2,11 +2,9 @@ use crate::task_queue::tasks::Task;
 use crate::APP_NAME;
 use anyhow::{anyhow, Result};
 use db_service::db::{DbPool, DbPoolConn};
-use db_service::schema::schema::directories::dsl::directories;
-use db_service::schema::schema::directories::is_imported;
 use db_service::schema::Directory;
+use db_service::services::directory::change_directories_status;
 use db_service::services::photo::get_photos_from_directory;
-use diesel::*;
 use image::imageops::FilterType;
 use image::ImageFormat;
 use rayon::prelude::*;
@@ -38,7 +36,6 @@ pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: D
 }
 
 pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) -> Result<()> {
-    use db_service::schema::schema::directories;
     let photos = get_photos_from_directory(conn, dir.id);
 
     if photos.is_empty() {
@@ -77,10 +74,5 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) ->
     });
 
     tracing::info!("Finished processing previews for directory: {}", dir.path);
-
-    update(directories.filter(directories::id.eq(dir.id)))
-        .set(is_imported.eq(true))
-        .execute(conn)?;
-
-    Ok(())
+    change_directories_status(conn, &dir.id, "is_imported")
 }

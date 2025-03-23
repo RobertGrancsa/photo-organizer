@@ -1,4 +1,3 @@
-use diesel::*;
 use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
@@ -8,10 +7,8 @@ use crate::commands::types::PhotoData;
 use crate::task_queue::tasks::Task;
 use crate::task_queue::TaskQueue;
 use db_service::db::DbPool;
-use db_service::schema::schema::directories::dsl::directories;
-use db_service::schema::schema::directories::photo_count;
 use db_service::schema::{Directory, NewDirectory};
-use db_service::services::directory::get_directories;
+use db_service::services::directory::{get_directories, get_directory_id_by_name, insert_directory};
 use db_service::services::photo::{get_photos_filtered, insert_photos_from_directory};
 use db_service::services::tags::get_unique_filters;
 
@@ -28,7 +25,6 @@ pub async fn add_folder(
     state: State<'_, Arc<Mutex<TaskQueue>>>,
     path: &str,
 ) -> Result<Directory, String> {
-    use db_service::schema::schema::directories;
     let conn = &mut pool.get().map_err(|e| e.to_string())?;
 
     let new_dir = NewDirectory {
@@ -37,20 +33,11 @@ pub async fn add_folder(
         photo_count: 0,
     };
 
-    let dir_record = diesel::insert_into(directories::table)
-        .values(&new_dir)
-        .returning(Directory::as_returning())
-        .get_result(conn)
-        .expect("Error saving dir");
+    let dir_record = insert_directory(conn, new_dir).map_err(|e| e.to_string())?;
 
-    let inserted_photo_count =
-        insert_photos_from_directory(conn, &dir_record).map_err(|e| e.to_string())?;
+    insert_photos_from_directory(conn, &dir_record).map_err(|e| e.to_string())?;
+
     let queue = state.lock().await;
-
-    update(directories.filter(directories::id.eq(dir_record.id)))
-        .set(photo_count.eq(inserted_photo_count as i32))
-        .execute(conn)
-        .map_err(|e| e.to_string())?;
 
     queue.add_task(Task::CreatePreviewForPhotos(dir_record.clone()));
 
@@ -63,15 +50,9 @@ pub fn get_photos_from_path(
     path: &str,
     tag_filters: Vec<String>,
 ) -> Result<PhotoData, String> {
-    use db_service::schema::schema::directories;
-    let conn = &mut pool.get().expect("Should be connected to the db");
+    let conn = &mut pool.get().map_err(|e| e.to_string())?;
 
-    // Get the UUID for the given directory path
-    let path_uuid: Option<Uuid> = directories
-        .filter(directories::path.eq(path))
-        .select(directories::id)
-        .first(conn)
-        .ok();
+    let path_uuid: Option<Uuid> = get_directory_id_by_name(conn, path);
 
     // If no UUID is found, return an empty list
     let path_uuid = match path_uuid {

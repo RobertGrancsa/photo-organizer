@@ -342,6 +342,7 @@ dependencies = [
  "chrono",
  "diesel",
  "dotenvy",
+ "image",
  "serde",
  "serde_yaml",
  "tracing",

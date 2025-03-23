@@ -22,14 +22,13 @@ pub fn detect_objects_for_image(
     tracing::debug!("Converting image to tensor…");
     let input = image_to_yolo_input_tensor(&original_img);
 
-    // Run YOLOv8 inference
+    // Run YOLOv11 inference
     tracing::info!("Running inference…");
     let now = std::time::Instant::now();
     let result = inference(&model, input.view())?;
     tracing::info!("Inference took {:?}", now.elapsed());
 
     tracing::debug!("Drawing bounding boxes…");
-    let (img_width, img_height) = (original_img.width(), original_img.height());
     let mut tags = HashSet::new();
 
     for YoloEntityOutput {
@@ -65,8 +64,8 @@ pub fn detect_objects_batch(
 ) -> Result<()> {
     tracing::info!("Loading models {:?}...", model_path);
     let model = {
-        let mut model = YoloModelSession::from_filename_v8(&model_path)
-            .with_context(|| format!("failed to load model {:?}", model_path))?;
+        let mut model = YoloModelSession::from_filename_v8(&model_path)?;
+            // .with_context(|| format!("failed to load model {:?}", model_path))?;
 
         model.probability_threshold = Some(0.5f32);
 

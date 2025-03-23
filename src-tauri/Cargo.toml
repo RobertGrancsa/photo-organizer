@@ -30,11 +30,11 @@ anyhow = "1.0.97"
 tauri-plugin-window-state = "2"
 
 db_service = { path = "../db_service" }
-diesel = { version = "2.2.0", features = ["postgres", "postgres_backend", "r2d2", "64-column-tables", "uuid", "numeric", "chrono"] }
 chrono = { version = "0.4.39", features = ["serde"] }
 bigdecimal = { version = "0.4.7", features = ["serde"] }
 uuid = { version = "1.14.0", features = ["v4"] }
 tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
 
 tokio = { version = "1.43.0", features = ["time"] }
 rayon = "1.10.0"

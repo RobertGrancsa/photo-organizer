@@ -2,7 +2,7 @@ use crate::tagging::task::tagging_task;
 use anyhow::Result;
 use db_service::db::init_pool;
 use db_service::seed::insert_tags_from_yaml;
-use ort::execution_providers::{CUDAExecutionProvider, CoreMLExecutionProvider};
+use ort::execution_providers::{CPUExecutionProvider, CUDAExecutionProvider, CoreMLExecutionProvider};
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -17,6 +17,7 @@ fn main() -> Result<()> {
     ort::init()
         .with_execution_providers([
             CUDAExecutionProvider::default().build(),
+            CPUExecutionProvider::default().build(),
             CoreMLExecutionProvider::default().build(),
         ])
         .commit()?;

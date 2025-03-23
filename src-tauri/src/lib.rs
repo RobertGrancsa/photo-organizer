@@ -13,6 +13,8 @@ pub const APP_NAME: &str = "photo-organizer";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    tracing_subscriber::fmt::init();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .setup(|app| {
