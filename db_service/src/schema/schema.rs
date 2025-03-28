@@ -1,5 +1,11 @@
 // @generated automatically by Diesel CLI.
 
+pub mod sql_types {
+    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "vector"))]
+    pub struct Vector;
+}
+
 diesel::table! {
     directories (id) {
         id -> Uuid,
@@ -69,6 +75,17 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::Vector;
+
+    face_embeddings (id) {
+        id -> Uuid,
+        photo_id -> Uuid,
+        embedding -> Nullable<Vector>,
+    }
+}
+
+diesel::table! {
     photo_tags_mappings (id) {
         id -> Uuid,
         #[max_length = 255]
@@ -95,12 +112,14 @@ diesel::table! {
 }
 
 diesel::joinable!(exif_metadata -> photos (photo_id));
+diesel::joinable!(face_embeddings -> photos (photo_id));
 diesel::joinable!(photo_tags_mappings -> photos (photo_id));
 diesel::joinable!(photos -> directories (path));
 
 diesel::allow_tables_to_appear_in_same_query!(
     directories,
     exif_metadata,
+    face_embeddings,
     photo_tags_mappings,
     photos,
     tags,

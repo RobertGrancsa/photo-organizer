@@ -7,6 +7,7 @@ use std::thread::sleep;
 use std::time::Duration;
 
 pub mod tagging;
+pub mod face_clustering;
 
 pub const APP_NAME: &str = "photo-organizer";
 

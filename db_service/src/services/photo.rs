@@ -22,6 +22,7 @@ pub fn insert_photos_from_directory(
     dir: &Directory,
 ) -> Result<usize> {
     let photo_entries: Vec<Photo> = WalkDir::new(&dir.path)
+        .into_iter()
         .filter_map(|entry| entry.ok()) // Ignore errors
         .filter(|e| e.file_type().is_file() && is_photo(e.path())) // Only take files
         .map(|entry| Photo {
