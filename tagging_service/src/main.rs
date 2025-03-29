@@ -5,6 +5,7 @@ use db_service::seed::insert_tags_from_yaml;
 use ort::execution_providers::{CPUExecutionProvider, CUDAExecutionProvider, CoreMLExecutionProvider};
 use std::thread::sleep;
 use std::time::Duration;
+use crate::face_clustering::task::face_clustering_task;
 
 pub mod tagging;
 pub mod face_clustering;
@@ -28,8 +29,11 @@ fn main() -> Result<()> {
     let conn = &mut pool.get().expect("Can't get DB connection");
     insert_tags_from_yaml(conn, "models/coco.yaml")?;
 
-    println!("Starting tagging task");
+    tracing::info!("Starting tagging task");
     tagging_task(conn)?;
+
+    tracing::info!("Starting face clustering task");
+    face_clustering_task(conn)?;
     sleep(Duration::from_secs(1000));
     Ok(())
 }

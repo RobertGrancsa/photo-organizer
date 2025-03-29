@@ -1,16 +1,15 @@
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Folder, Photo } from "@/types";
-import { convertFileSrc } from "@tauri-apps/api/core";
+import { Photo } from "@/types";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { selectCurrentFolder, selectPreviewDir } from "@/contexts/slices/pathSlice";
 import { motion } from "framer-motion";
 import { clsx } from "clsx";
 import { Card, CardContent } from "@/components/ui/card";
-import * as path from "path-browserify";
 import { useNavigate } from "react-router";
-import { selectSelectedPhotoIndex, setSelectedPhoto } from "@/contexts/slices/photosSlice";
-import { transitionImages } from "@/lib/animations";
+import { setSelectedPhoto } from "@/contexts/slices/photosSlice";
+import { getPreviewPath } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PhotoProps {
     photo: Photo;
@@ -23,9 +22,6 @@ const cardVariants = {
     // exit: { opacity: 0, scale: 0.95 },
 };
 
-const getPreviewPath = (dirId: string, photoId: string, previewDir: string) =>
-    convertFileSrc(path.join(previewDir, dirId, photoId) + ".preview.webp");
-
 const PhotoPreview: React.FC<PhotoProps> = ({ photo, index }) => {
     const dir = useAppSelector(selectCurrentFolder);
     const previewDir = useAppSelector(selectPreviewDir);
@@ -34,7 +30,8 @@ const PhotoPreview: React.FC<PhotoProps> = ({ photo, index }) => {
 
     const previewPath = getPreviewPath(dir.id, photo.id, previewDir);
 
-    const [loaded, setLoaded] = useState(false);
+    const [error, setError] = useState<boolean>(false);
+    const [loaded, setLoaded] = useState<boolean>(false);
     const imgRef = useRef<HTMLImageElement>(null);
 
     useEffect(() => {
@@ -62,16 +59,19 @@ const PhotoPreview: React.FC<PhotoProps> = ({ photo, index }) => {
     return (
         <Card className="w-full h-full overflow-hidden rounded-lg shadow-md p-0 border-none" onClick={selectPhoto}>
             <CardContent className="p-0">
-                <motion.img
-                    className={clsx("w-full h-full aspect-3/2 object-cover scale-101", { hidden: false })}
-                    ref={imgRef}
-                    onLoad={() => setLoaded(true)}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    src={previewPath}
-                    alt={photo.name}
-                />
-                {/*{!loaded && <Skeleton className="h-[400px] w-[400px]" />}*/}
+                {!error && (
+                    <motion.img
+                        className={clsx("w-full h-full aspect-3/2 object-cover scale-101", { hidden: false })}
+                        ref={imgRef}
+                        onLoad={() => setLoaded(true)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        src={previewPath}
+                        alt={photo.name}
+                        onError={(err) => setError(true)}
+                    />
+                )}
+                {!loaded && <Skeleton className="h-full aspect-3/2" />}
             </CardContent>
         </Card>
     );

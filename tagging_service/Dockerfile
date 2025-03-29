@@ -1,5 +1,5 @@
 # 1. Start with a PyTorch Docker image
-FROM nvidia/cuda:12.4.0-devel-ubuntu22.04 AS base
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS base
 
 # 2. Install Rust
 RUN apt-get update  \

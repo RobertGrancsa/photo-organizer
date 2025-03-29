@@ -7,7 +7,7 @@ edition = "2024"
 db_service = { path = "../db_service" }
 
 anyhow = "1.0.97"
-image = { version = "0.25.5", features = [] }
+image = { version = "0.25.6", features = [] }
 rayon = "1.10.0"
 
 ort = { version = "2.0.0-rc.9", features = ["cuda"] }
@@ -18,3 +18,5 @@ yolo-rs = "0.1.1"
 ndarray = "0.16.1"
 linfa = "0.7.1"
 linfa-clustering = "0.7.1"
+itertools = "0.14.0"
+rust-faces = "1.0.0"
