@@ -11,16 +11,14 @@ import { transitionImages } from "@/lib/animations";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 import { Carousel, CarouselApi, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "../ui/carousel";
+import { getPhotoPath } from "@/lib/utils";
 
 interface PhotoDisplayProps {}
-
-const getPhotoPath = (dirPath: string, photoName: string) => convertFileSrc(path.join(dirPath, photoName));
 
 const PhotoDisplay: React.FC<PhotoDisplayProps> = ({}) => {
     const [api, setApi] = React.useState<CarouselApi>();
     const dirPath = useAppSelector(selectCurrentPath);
     const dispatch = useAppDispatch();
-    const { name } = useParams<{ name: string }>();
     const photos = useAppSelector(selectPhotoWithNeighbours);
 
     useEffect(() => {
