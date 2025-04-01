@@ -18,7 +18,7 @@ pub fn tagging_task(conn: &mut DbPoolConn) -> Result<()> {
         match detect_objects_batch(String::from("models/yolo11n.onnx"), dir, conn) {
             Ok(_) => {
                 tracing::info!("Object detection done for {}!", name);
-                if let Err(e) = change_directories_status(conn,  &id,"is_tagged") {
+                if let Err(e) = change_directories_status(conn, &id, "is_tagged") {
                     tracing::error!("Cannot update status for {}: {}", name, e);
                 }
             }

@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use crate::APP_NAME;
 use anyhow::{Context, Result};
 use db_service::db::DbPoolConn;
@@ -6,6 +5,7 @@ use db_service::schema::{Directory, Photo};
 use db_service::services::photo::get_photos_from_directory;
 use db_service::services::tags::{Detection, insert_photo_tags_mappings};
 use rayon::prelude::*;
+use std::collections::HashSet;
 use std::path::Path;
 use std::sync::Arc;
 use yolo_rs::model::YoloModelSession;
@@ -65,7 +65,7 @@ pub fn detect_objects_batch(
     tracing::info!("Loading models {:?}...", model_path);
     let model = {
         let mut model = YoloModelSession::from_filename_v8(&model_path)?;
-            // .with_context(|| format!("failed to load model {:?}", model_path))?;
+        // .with_context(|| format!("failed to load model {:?}", model_path))?;
 
         model.probability_threshold = Some(0.5f32);
 

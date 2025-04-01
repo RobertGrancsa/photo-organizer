@@ -7,10 +7,7 @@
       <script value="dev" />
     </scripts>
     <node-interpreter value="project" />
-    <envs>
-      <env name="LIBTORCH" value="H:\Projects\photo-organizer\libtorch\Lib\site-packages\torch" />
-      <env name="LIBTORCH_USE_PYTORCH" value="1" />
-    </envs>
+    <envs />
     <method v="2" />
   </configuration>
 </component>

@@ -1,11 +1,11 @@
 use crate::db::DbPoolConn;
-use crate::schema::{Directory, NewDirectory};
+use crate::schema::schema::directories;
 use crate::schema::schema::directories::dsl::directories as directories_dsl;
 use crate::schema::schema::directories::*;
+use crate::schema::{Directory, NewDirectory};
 use anyhow::{Result, anyhow};
 use diesel::*;
 use uuid::Uuid;
-use crate::schema::schema::directories;
 
 pub fn get_directories(conn: &mut DbPoolConn) -> Result<Vec<Directory>> {
     let dirs = directories_dsl

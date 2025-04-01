@@ -1,3 +1,4 @@
+use crate::face_clustering::detect_faces::detect_faces;
 use crate::face_clustering::face_embeddings::face_embeddings_pipeline;
 use crate::tagging::yolo_detect::detect_objects_batch;
 use anyhow::Result;
@@ -7,7 +8,6 @@ use db_service::services::directory::{change_directories_status, get_directories
 use ort::session::Session;
 use std::sync::Arc;
 use yolo_rs::error::YoloError;
-use crate::face_clustering::detect_faces::detect_faces;
 
 pub fn face_clustering_task(conn: &mut DbPoolConn) -> Result<()> {
     let un_processed_dirs = get_directories_by_status(conn, "is_face_tagging_done", false)?;
@@ -24,7 +24,12 @@ pub fn face_clustering_task(conn: &mut DbPoolConn) -> Result<()> {
         let name = dir.path.clone();
         let _id = dir.id.clone();
         tracing::info!("Starting generation of embeddings for {}", dir.path);
-        match face_embeddings_pipeline(Arc::clone(&retinaface_model), Arc::clone(&facenet_model), dir, conn) {
+        match face_embeddings_pipeline(
+            Arc::clone(&retinaface_model),
+            Arc::clone(&facenet_model),
+            dir,
+            conn,
+        ) {
             Ok(_) => {
                 tracing::info!("Face embeddings done for {}!", name);
                 // if let Err(e) = change_directories_status(conn, &id, "is_face_tagging_done") {

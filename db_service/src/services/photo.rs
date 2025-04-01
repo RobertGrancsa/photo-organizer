@@ -2,13 +2,13 @@ use crate::db::DbPoolConn;
 use crate::schema::schema::photos::dsl::photos as photos_dsl;
 use crate::schema::schema::{directories, photos};
 use crate::schema::{Directory, Photo};
+use anyhow::Result;
 use diesel::prelude::*;
 use diesel::update;
+use image::ImageFormat;
 use std::path::Path;
 use uuid::Uuid;
 use walkdir::WalkDir;
-use image::ImageFormat;
-use anyhow::Result;
 
 fn is_photo(file_path: &Path) -> bool {
     file_path
@@ -17,10 +17,7 @@ fn is_photo(file_path: &Path) -> bool {
         .is_some()
 }
 
-pub fn insert_photos_from_directory(
-    conn: &mut DbPoolConn,
-    dir: &Directory,
-) -> Result<usize> {
+pub fn insert_photos_from_directory(conn: &mut DbPoolConn, dir: &Directory) -> Result<usize> {
     let photo_entries: Vec<Photo> = WalkDir::new(&dir.path)
         .into_iter()
         .filter_map(|entry| entry.ok()) // Ignore errors
