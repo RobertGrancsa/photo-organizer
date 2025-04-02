@@ -1,12 +1,10 @@
 use crate::face_clustering::nms::{Face, Nms, Rect};
-use anyhow::{Result, anyhow};
+use anyhow::Result;
 use db_service::schema::Photo;
-use image::{DynamicImage, GenericImageView, ImageReader, RgbImage, RgbaImage, imageops};
+use image::{DynamicImage, GenericImageView};
 use itertools::iproduct;
-use ndarray::{Array, Array2, Array3, Array4, ArrayD, ArrayViewD, Axis, Dim, Ix, Ix1, s};
-use ort::session::output::Values;
-use ort::session::{Session, SessionOutputs};
-use ort::value::{DynValue, Value};
+use ndarray::{Array, Array2, Array4, Axis, s};
+use ort::session::Session;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -188,15 +186,6 @@ pub fn detect_faces(
 
     tracing::info!("Found {:?} faces:", faces.len());
     let faces_cropped = extract_faces(&dynamic_image, &faces);
-
-    // Save cropped faces
-    for (i, face) in faces_cropped.iter().enumerate() {
-        let output_path = format!(
-            "/tagging_service/data/photo-organizer/faces/{:?}_{}.webp",
-            photo.id, i
-        );
-        face.save(output_path).expect("Failed to save cropped face");
-    }
 
     Ok(faces_cropped)
 }

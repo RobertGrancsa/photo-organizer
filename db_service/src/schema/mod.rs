@@ -3,6 +3,7 @@ use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use pgvector::Vector;
 
 pub mod schema;
 pub mod types;
@@ -128,4 +129,12 @@ pub struct NewPhotoTagMapping {
 pub struct Tag {
     pub id: i16,
     pub tag: String,
+}
+
+#[derive(Insertable, Queryable, Selectable)]
+#[diesel(table_name = crate::schema::schema::face_embeddings)]
+pub struct FaceEmbedding {
+    pub id: Uuid,
+    pub photo_id: Uuid,
+    pub embedding: Vector,
 }

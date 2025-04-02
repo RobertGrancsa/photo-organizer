@@ -4,13 +4,29 @@ use crate::face_clustering::detect_faces::detect_faces;
 use anyhow::Result;
 use db_service::db::DbPoolConn;
 use db_service::schema::{Directory, Photo};
+use db_service::services::embeddings::add_embeddings;
 use db_service::services::photo::get_photos_from_directory;
 use image::DynamicImage;
-use ndarray::{Array, Array4, IxDyn};
 use ort::session::Session;
 use rayon::prelude::*;
 use std::path::Path;
 use std::sync::Arc;
+use uuid::Uuid;
+
+fn save_cropped_faces(faces_cropped: &Vec<DynamicImage>) -> Vec<Uuid> {
+    // Save cropped faces
+    faces_cropped
+        .iter()
+        .map(|face| {
+            let uuid = Uuid::new_v4();
+
+            let output_path = format!("/tagging_service/data/photo-organizer/faces/{:?}webp", uuid);
+            face.save(output_path).expect("Failed to save cropped face");
+
+            uuid
+        })
+        .collect()
+}
 
 pub fn face_embeddings_pipeline(
     retinaface_model: Arc<Session>,
@@ -26,7 +42,7 @@ pub fn face_embeddings_pipeline(
         .join(directory.id.to_string());
 
     // Process images in parallel using Rayon.
-    let _results: Vec<(&Photo, Vec<Array<f32, IxDyn>>)> = photos
+    let results: Vec<(&Photo, Vec<Uuid>, Vec<Vec<f32>>)> = photos
         .par_iter()
         .map(|photo| {
             // Clone the Arc pointer for each thread.
@@ -37,21 +53,25 @@ pub fn face_embeddings_pipeline(
                 Ok(faces) => faces,
                 Err(err) => {
                     tracing::error!("Error when detecting faces: {:?}", err);
-                    return (photo, Vec::new());
+                    return (photo, Vec::new(), Vec::new());
                 }
             };
+
+            let ids = save_cropped_faces(&faces);
 
             let facenet_model = Arc::clone(&facenet_model);
 
             match run_facenet_on_faces(faces, facenet_model) {
-                Ok(embeddings) => (photo, embeddings),
+                Ok(embeddings) => (photo, ids, embeddings),
                 Err(err) => {
                     tracing::error!("Error when creating embeddings: {:?}", err);
-                    (photo, Vec::new())
+                    (photo, Vec::new(), Vec::new())
                 }
             }
         })
         .collect();
+
+    add_embeddings(conn, results)?;
 
     Ok(())
 }

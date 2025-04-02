@@ -1,12 +1,9 @@
 // @generated automatically by Diesel CLI.
 
-pub mod sql_types {
-    #[derive(diesel::query_builder::QueryId, Clone, diesel::sql_types::SqlType)]
-    #[diesel(postgres_type(name = "vector"))]
-    pub struct Vector;
-}
-
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::*;
+
     directories (id) {
         id -> Uuid,
         #[max_length = 512]
@@ -20,6 +17,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::*;
+
     exif_metadata (id) {
         id -> Uuid,
         photo_id -> Uuid,
@@ -76,16 +76,19 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
-    use super::sql_types::Vector;
+    use pgvector::sql_types::*;
 
     face_embeddings (id) {
         id -> Uuid,
         photo_id -> Uuid,
-        embedding -> Nullable<Vector>,
+        embedding -> Vector,
     }
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::*;
+
     photo_tags_mappings (id) {
         id -> Uuid,
         #[max_length = 255]
@@ -95,6 +98,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::*;
+
     photos (id) {
         id -> Uuid,
         path -> Uuid,
@@ -104,6 +110,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::*;
+
     tags (id) {
         id -> Int2,
         #[max_length = 255]

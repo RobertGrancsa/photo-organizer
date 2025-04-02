@@ -294,6 +294,7 @@ dependencies = [
  "diesel",
  "dotenvy",
  "image",
+ "pgvector",
  "serde",
  "serde_yaml",
  "tracing",
@@ -790,6 +791,15 @@ name = "paste"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
+
+[[package]]
+name = "pgvector"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0e8871b6d7ca78348c6cd29b911b94851f3429f0cd403130ca17f26c1fb91a6"
+dependencies = [
+ "diesel",
+]
 
 [[package]]
 name = "pin-project-lite"

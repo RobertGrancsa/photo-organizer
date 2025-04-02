@@ -1,8 +1,7 @@
 use anyhow::Result;
-use db_service::schema::Photo;
 use image::DynamicImage;
 use image::imageops::FilterType;
-use ndarray::{Array, Array1, Array4, Axis, IxDyn};
+use ndarray::{Array, Array4, Axis};
 use ort::session::Session;
 use std::sync::Arc;
 
@@ -39,7 +38,7 @@ fn preprocess_face_for_facenet(
 pub fn run_facenet_on_faces(
     face_images: Vec<DynamicImage>,
     model: Arc<Session>,
-) -> Result<Vec<Array<f32, IxDyn>>> {
+) -> Result<Vec<Vec<f32>>> {
     // Target size for FaceNet input. Adjust according to your model.
     let target_size = (160, 160);
     let mut embeddings = Vec::with_capacity(face_images.len());
@@ -57,7 +56,13 @@ pub fn run_facenet_on_faces(
         // Assume that outputs[0] contains the embedding vector with shape [1, embedding_size].
         let embedding_tensor = outputs[0].try_extract_tensor::<f32>()?;
         // Remove the batch dimension.
-        let embedding = embedding_tensor.view().index_axis(Axis(0), 0).to_owned();
+        let embedding = embedding_tensor
+            .view()
+            .index_axis(Axis(0), 0)
+            .to_owned()
+            .iter()
+            .cloned()
+            .collect();
         embeddings.push(embedding);
     }
 

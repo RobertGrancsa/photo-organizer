@@ -1,4 +1,4 @@
-use crate::face_clustering::task::face_clustering_task;
+use crate::face_clustering::task::{face_clustering_task, face_embeddings_task};
 use crate::tagging::task::tagging_task;
 use anyhow::Result;
 use db_service::db::init_pool;
@@ -33,6 +33,9 @@ fn main() -> Result<()> {
 
     tracing::info!("Starting tagging task");
     tagging_task(conn)?;
+
+    tracing::info!("Starting face embedding task");
+    face_embeddings_task(conn)?;
 
     tracing::info!("Starting face clustering task");
     face_clustering_task(conn)?;
