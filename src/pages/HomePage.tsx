@@ -1,13 +1,13 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getPhotosAtPath } from "@/lib/api";
+import { getFaceClusters, getPhotosAtPath } from "@/lib/api";
 import LoadingPage from "@/pages/LoadingPage";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import Sidebar from "@/components/Sidebar";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { selectCurrentFolder, selectPreviewDir } from "@/contexts/slices/pathSlice";
-import { selectSelectedTags, setPhotos } from "@/contexts/slices/photosSlice";
+import { selectSelectedTags, setFaceClusters, setPhotos } from "@/contexts/slices/photosSlice";
 import { Outlet } from "react-router";
 import useIsInitialized from "@/contexts/FoldersContext";
 
@@ -24,6 +24,12 @@ const HomePage = () => {
         enabled: !!folder.id,
     });
 
+    const { data: faceClusters, isFetched: isFacesFetched } = useQuery({
+        queryKey: ["faces", folder.path],
+        queryFn: () => getFaceClusters(folder.path),
+        enabled: !!folder.id,
+    });
+
     useEffect(() => {
         if (!loadedPhotos) {
             return;
@@ -31,6 +37,14 @@ const HomePage = () => {
 
         dispatch(setPhotos(loadedPhotos));
     }, [loadedPhotos]);
+
+    useEffect(() => {
+        if (!isFacesFetched) {
+            return;
+        }
+
+        dispatch(setFaceClusters(faceClusters));
+    }, [faceClusters, isFacesFetched]);
 
     if (!previewPath) {
         return <LoadingPage />;

@@ -6,6 +6,7 @@ interface PhotosState {
     photos: Photo[];
     tags: string[];
     selectedTags: string[];
+    facesClusters: Record<string, string[]>;
     selectedPhoto?: Photo;
     selectedPhotoIndex?: number;
 }
@@ -14,6 +15,7 @@ const initialState: PhotosState = {
     photos: [],
     tags: [],
     selectedTags: [],
+    facesClusters: {},
 };
 
 export const photosSlice = createSlice({
@@ -23,6 +25,10 @@ export const photosSlice = createSlice({
         setPhotos: (state, action: PayloadAction<PhotoData>) => {
             state.photos = action.payload.photos;
             state.tags = action.payload.tags;
+        },
+        setFaceClusters: (state, action: PayloadAction<Record<string, string[]>>) => {
+            const sortedEntries = Object.entries(action.payload).sort(([, a], [, b]) => -(a.length - b.length));
+            state.facesClusters = Object.fromEntries(sortedEntries);
         },
         setSelectedPhoto: (state, action: PayloadAction<{ photo: Photo; index: number }>) => {
             state.selectedPhoto = action.payload.photo;
@@ -55,6 +61,7 @@ export const photosSlice = createSlice({
 
 export const {
     setPhotos,
+    setFaceClusters,
     setSelectedPhoto,
     setNextPhoto,
     setPreviousPhoto,
@@ -65,6 +72,7 @@ export const {
 } = photosSlice.actions;
 
 export const selectPhotos = (state: RootState) => state.photo.photos;
+export const selectFaces = (state: RootState) => state.photo.facesClusters;
 export const selectTags = (state: RootState) => state.photo.tags;
 export const selectSelectedPhoto = (state: RootState) => state.photo.selectedPhoto;
 export const selectSelectedPhotoIndex = (state: RootState) => state.photo.selectedPhotoIndex;

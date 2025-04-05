@@ -4,6 +4,17 @@ diesel::table! {
     use diesel::sql_types::*;
     use pgvector::sql_types::*;
 
+    clusters (id) {
+        id -> Uuid,
+        #[max_length = 64]
+        name -> Nullable<Varchar>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::*;
+
     directories (id) {
         id -> Uuid,
         #[max_length = 512]
@@ -82,6 +93,7 @@ diesel::table! {
         id -> Uuid,
         photo_id -> Uuid,
         embedding -> Vector,
+        cluster_id -> Nullable<Uuid>,
     }
 }
 
@@ -126,6 +138,7 @@ diesel::joinable!(photo_tags_mappings -> photos (photo_id));
 diesel::joinable!(photos -> directories (path));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    clusters,
     directories,
     exif_metadata,
     face_embeddings,

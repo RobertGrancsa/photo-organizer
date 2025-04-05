@@ -2,7 +2,7 @@ use crate::task_queue::tasks::Task;
 use crate::task_queue::TaskQueue;
 use anyhow::Result;
 use db_service::db::DbPoolConn;
-use db_service::services::directory::{get_directories_by_status};
+use db_service::services::directory::get_directories_by_status;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 

@@ -1,9 +1,9 @@
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
+use pgvector::Vector;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use pgvector::Vector;
 
 pub mod schema;
 pub mod types;
@@ -137,4 +137,27 @@ pub struct FaceEmbedding {
     pub id: Uuid,
     pub photo_id: Uuid,
     pub embedding: Vector,
+    pub cluster_id: Option<Uuid>,
+}
+
+#[derive(Queryable, Selectable)]
+#[diesel(table_name = crate::schema::schema::face_embeddings)]
+pub struct FaceEmbeddingVec {
+    pub id: Uuid,
+    pub photo_id: Uuid,
+    pub embedding: Vec<f32>,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = crate::schema::schema::clusters)]
+pub struct NewCluster {
+    pub id: Uuid,
+    pub name: Option<String>,
+}
+
+// Updatable struct for the face_embeddings table.
+#[derive(AsChangeset)]
+#[diesel(table_name = crate::schema::schema::face_embeddings)]
+pub struct FaceEmbeddingClusterUpdate {
+    pub cluster_id: Option<Uuid>,
 }

@@ -8,7 +8,9 @@ use crate::task_queue::tasks::Task;
 use crate::task_queue::TaskQueue;
 use db_service::db::DbPool;
 use db_service::schema::{Directory, NewDirectory};
-use db_service::services::directory::{get_directories, get_directory_id_by_name, insert_directory};
+use db_service::services::directory::{
+    get_directories, get_directory_id_by_name, insert_directory,
+};
 use db_service::services::photo::{get_photos_filtered, insert_photos_from_directory};
 use db_service::services::tags::get_unique_filters;
 

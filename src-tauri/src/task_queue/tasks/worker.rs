@@ -47,7 +47,7 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) ->
 
     let output_folder = local_photo_path.join(APP_NAME).join(dir.id.to_string());
 
-    fs::create_dir_all(&output_folder).expect("Failed to create preview directory");
+    fs::create_dir_all(&output_folder)?;
 
     photos.par_iter().for_each(|photo| {
         let input_path = Path::new(&dir.path).join(&photo.name);

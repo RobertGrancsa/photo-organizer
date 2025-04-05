@@ -1,6 +1,5 @@
 use crate::face_clustering::nms::{Face, Nms, Rect};
 use anyhow::Result;
-use db_service::schema::Photo;
 use image::{DynamicImage, GenericImageView};
 use itertools::iproduct;
 use ndarray::{Array, Array2, Array4, Axis, s};
@@ -131,7 +130,6 @@ fn extract_faces(img: &DynamicImage, faces: &[Face]) -> Vec<DynamicImage> {
 
 pub fn detect_faces(
     path: &PathBuf,
-    photo: &Photo,
     model: Arc<Session>,
 ) -> Result<Vec<DynamicImage>> {
     let (input_tensor, dynamic_image) = preprocess_image(&path)?;

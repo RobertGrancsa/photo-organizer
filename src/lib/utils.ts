@@ -11,3 +11,6 @@ export const getPhotoPath = (dirPath: string, photoName: string) => convertFileS
 
 export const getPreviewPath = (dirId: string, photoId: string, previewDir: string) =>
     convertFileSrc(path.join(previewDir, dirId, photoId) + ".preview.webp");
+
+export const getFacePath = (dirId: string, faceId: string, previewDir: string) =>
+    convertFileSrc(path.join(previewDir, dirId, "faces", faceId) + ".webp");

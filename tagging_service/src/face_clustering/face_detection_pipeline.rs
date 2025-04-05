@@ -1,3 +1,4 @@
+use std::fs;
 use crate::APP_NAME;
 use crate::face_clustering::calculate_embeddings::run_facenet_on_faces;
 use crate::face_clustering::detect_faces::detect_faces;
@@ -6,22 +7,25 @@ use db_service::db::DbPoolConn;
 use db_service::schema::{Directory, Photo};
 use db_service::services::embeddings::add_embeddings;
 use db_service::services::photo::get_photos_from_directory;
-use image::DynamicImage;
+use image::{DynamicImage, ImageFormat};
 use ort::session::Session;
 use rayon::prelude::*;
 use std::path::Path;
 use std::sync::Arc;
 use uuid::Uuid;
 
-fn save_cropped_faces(faces_cropped: &Vec<DynamicImage>) -> Vec<Uuid> {
+fn save_cropped_faces(faces_cropped: &Vec<DynamicImage>, directory: &Path) -> Vec<Uuid> {
     // Save cropped faces
     faces_cropped
         .iter()
         .map(|face| {
             let uuid = Uuid::new_v4();
+            let output_path = directory.join("faces")
+                .join(format!("{:?}.webp", uuid));
 
-            let output_path = format!("/tagging_service/data/photo-organizer/faces/{:?}webp", uuid);
-            face.save(output_path).expect("Failed to save cropped face");
+            if let Err(e) = face.save_with_format(&output_path, ImageFormat::WebP) {
+                tracing::error!("Failed to save face at path {:?}: {:?}", output_path, e);
+            }
 
             uuid
         })
@@ -41,6 +45,8 @@ pub fn face_embeddings_pipeline(
         .join(APP_NAME)
         .join(directory.id.to_string());
 
+    fs::create_dir_all(&output_folder.join("faces"))?;
+
     // Process images in parallel using Rayon.
     let results: Vec<(&Photo, Vec<Uuid>, Vec<Vec<f32>>)> = photos
         .par_iter()
@@ -49,7 +55,7 @@ pub fn face_embeddings_pipeline(
             let retinaface_model = Arc::clone(&retinaface_model);
             let preview = output_folder.join(format!("{}.preview.{}", photo.id, "webp"));
 
-            let faces = match detect_faces(&preview, photo, retinaface_model) {
+            let faces = match detect_faces(&preview, retinaface_model) {
                 Ok(faces) => faces,
                 Err(err) => {
                     tracing::error!("Error when detecting faces: {:?}", err);
@@ -57,7 +63,7 @@ pub fn face_embeddings_pipeline(
                 }
             };
 
-            let ids = save_cropped_faces(&faces);
+            let ids = save_cropped_faces(&faces, &output_folder);
 
             let facenet_model = Arc::clone(&facenet_model);
 

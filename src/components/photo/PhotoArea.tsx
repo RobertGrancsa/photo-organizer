@@ -7,12 +7,14 @@ import { Slider } from "@/components/ui/slider";
 import { useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import TagFilters from "@/components/filters/TagFilters";
+import FacesDisplay from "@/components/faces/FacesDisplay";
 
 const PhotoArea: React.FC = () => {
     const photos = useAppSelector(selectPhotos);
     const { directory } = useParams<{ directory: string }>();
     const [gridSize, setGridSize] = useState<[number]>([4]);
     const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+    const [facesOpen, setFacesOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const savedGridSize = localStorage.getItem("photosGridSize");
@@ -24,6 +26,9 @@ const PhotoArea: React.FC = () => {
     return (
         <>
             <div className="h-12 border-b flex justify-center items-center space-x-2 px-4">
+                <Button variant="ghost" onClick={() => setFacesOpen(!facesOpen)}>
+                    Faces
+                </Button>
                 <Button variant="ghost" onClick={() => setFiltersOpen(!filtersOpen)}>
                     Filters
                 </Button>
@@ -40,6 +45,7 @@ const PhotoArea: React.FC = () => {
                 />
             </div>
             {filtersOpen && <TagFilters />}
+            {facesOpen && <FacesDisplay />}
             <PhotoGrid photos={photos} columnCount={gridSize[0]} />
         </>
     );

@@ -8,6 +8,7 @@ use db_service::db::init_pool;
 use std::sync::Arc;
 use tauri::Manager;
 use tokio::sync::Mutex;
+use crate::commands::faces::get_face_clusters;
 
 pub const APP_NAME: &str = "photo-organizer";
 
@@ -39,7 +40,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_folders,
             add_folder,
-            get_photos_from_path
+            get_photos_from_path,
+            get_face_clusters,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
