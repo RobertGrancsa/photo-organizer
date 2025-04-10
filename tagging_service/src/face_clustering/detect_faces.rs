@@ -128,10 +128,7 @@ fn extract_faces(img: &DynamicImage, faces: &[Face]) -> Vec<DynamicImage> {
     face_images
 }
 
-pub fn detect_faces(
-    path: &PathBuf,
-    model: Arc<Session>,
-) -> Result<Vec<DynamicImage>> {
+pub fn detect_faces(path: &PathBuf, model: Arc<Session>) -> Result<Vec<DynamicImage>> {
     let (input_tensor, dynamic_image) = preprocess_image(&path)?;
 
     // Run the RetinaFace model.

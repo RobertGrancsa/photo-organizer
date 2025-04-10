@@ -49,6 +49,8 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) ->
 
     fs::create_dir_all(&output_folder)?;
 
+    tracing::info!("Started preview creation for: {}", dir.path);
+
     photos.par_iter().for_each(|photo| {
         let input_path = Path::new(&dir.path).join(&photo.name);
         if !input_path.exists() {
@@ -57,6 +59,11 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) ->
         }
 
         let output_path = output_folder.join(format!("{}.preview.{}", photo.id, "webp"));
+
+        if output_path.exists() {
+            tracing::debug!("Preview already exists, skipping: {:?}", input_path);
+            return;
+        }
 
         match image::open(input_path) {
             Ok(img) => {

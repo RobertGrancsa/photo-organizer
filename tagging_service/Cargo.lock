@@ -2568,9 +2568,9 @@ dependencies = [
 
 [[package]]
 name = "yolo-rs"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffbc95d3b092f6aafce969f31158a9bf512574047e7cd43a3470bdbd9e910e06"
+checksum = "6e110514cfb0657ace31ca4e74546e8f311f473f4ff2430f2ec561a664525ab0"
 dependencies = [
  "arcstr",
  "image",

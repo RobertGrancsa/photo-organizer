@@ -2,13 +2,14 @@ pub mod commands;
 pub mod task_queue;
 
 use crate::commands::commands::{add_folder, get_folders, get_photos_from_path};
+use crate::commands::faces::get_face_clusters;
+use crate::task_queue::tasks::pre_initialization::restart_background_processing;
 use crate::task_queue::tasks::worker::task_worker;
 use crate::task_queue::TaskQueue;
 use db_service::db::init_pool;
 use std::sync::Arc;
 use tauri::Manager;
 use tokio::sync::Mutex;
-use crate::commands::faces::get_face_clusters;
 
 pub const APP_NAME: &str = "photo-organizer";
 
@@ -25,7 +26,16 @@ pub fn run() {
             let queue_state = Arc::new(Mutex::new(task_queue));
 
             let worker_db_pool = pool.clone();
+            let q = queue_state.clone();
             tauri::async_runtime::spawn(async move {
+                let conn = &mut worker_db_pool
+                    .get()
+                    .map_err(|err| err.to_string())
+                    .expect("We have DB connection");
+
+                if let Err(err) = restart_background_processing(conn, q).await {
+                    tracing::error!("Error while restarting image preview gen: {:?}", err);
+                }
                 task_worker(task_receiver, worker_db_pool).await;
             });
 

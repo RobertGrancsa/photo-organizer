@@ -20,7 +20,7 @@ const FaceGroup: React.FC<FacesDisplayProps> = ({ faceIds, partOfGroup }) => {
 
     return (
         <>
-            <motion.div>
+            <motion.div layoutId={`${firstFace}-face${!partOfGroup ? "-main" : ""}`}>
                 <Card
                     className={clsx("overflow-hidden rounded-lg shadow-md border-none p-0 gap-0", {
                         "outline-2 outline-cyan-700 scale-90": showMore,
@@ -31,11 +31,10 @@ const FaceGroup: React.FC<FacesDisplayProps> = ({ faceIds, partOfGroup }) => {
                 >
                     <CardContent className="p-0 w-24 h-32 relative">
                         <img className="object-cover w-24 h-32" src={getFacePath(directory.id, firstFace, previewDir)} alt="faces" />
-                        <div className="bg-accent rounded-3xl absolute top-2 right-2 w-4 text-center shadow">{faceIds.length}</div>
+                        {!partOfGroup && (
+                            <div className="bg-accent rounded-3xl absolute top-2 right-2 w-4 text-center shadow">{faceIds.length}</div>
+                        )}
                     </CardContent>
-                    {/*<CardFooter className="text-center font-medium items-center">*/}
-                    {/*    <div className="text-center content-center items-center w-full">{faceIds.length}</div>*/}
-                    {/*</CardFooter>*/}
                 </Card>
             </motion.div>
             {showMore && faceIds.length > 1 && faceIds.map((faceId, i) => <FaceGroup key={i} faceIds={[faceId]} partOfGroup={true} />)}

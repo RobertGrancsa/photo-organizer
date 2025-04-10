@@ -4,18 +4,48 @@ use db_service::schema::FaceEmbeddingVec;
 use db_service::services::embeddings::{assign_clusters, get_all_embeddings};
 use linfa::dataset::{DatasetBase, Labels, Records};
 use linfa::metrics::SilhouetteScore;
+use linfa::prelude::*;
 use linfa::traits::Transformer;
 use linfa_clustering::Dbscan;
-use ndarray_old::{Array1, Array2, Axis};
+use linfa_nn::CommonNearestNeighbour;
+use linfa_nn::distance::Distance;
+use ndarray_old::{Array1, Array2, ArrayView, Axis, Dimension};
 
-fn normalize_embeddings(embeddings: &mut Array2<f32>) {
-    for mut row in embeddings.axis_iter_mut(Axis(0)) {
-        let norm = row.iter().map(|x| x * x).sum::<f32>().sqrt().max(f32::EPSILON);
-        row.map_inplace(|x| *x /= norm);
+/// A custom distance type for Cosine Distance t
+/// distance(a, b) = 1 - cos_similarity(a, b)
+///               = 1 - (a · b / (||a|| * ||b||))
+#[derive(Clone, Copy, Debug)]
+pub struct CosineDist;
+
+impl<F: Float> Distance<F> for CosineDist {
+    fn distance<D: Dimension>(&self, a: ArrayView<F, D>, b: ArrayView<F, D>) -> F {
+        let mut dot = F::zero();
+        let mut norm_a = F::zero();
+        let mut norm_b = F::zero();
+
+        // Compute dot product and squared norms
+        for (&x, &y) in a.iter().zip(b.iter()) {
+            dot = dot + x * y;
+            norm_a = norm_a + x * x;
+            norm_b = norm_b + y * y;
+        }
+
+        // Avoid division by zero if either is the zero vector
+        if norm_a == F::zero() || norm_b == F::zero() {
+            // You might define zero-vector distance differently, but 1.0 is a common choice
+            return F::one();
+        }
+
+        let norm_a = norm_a.sqrt();
+        let norm_b = norm_b.sqrt();
+        F::one() - (dot / (norm_a * norm_b))
     }
 }
 
-pub fn cluster_embeddings(embeddings: &Vec<FaceEmbeddingVec>, min_points: usize) -> Result<Array1<Option<usize>>> {
+pub fn cluster_embeddings(
+    embeddings: &Vec<FaceEmbeddingVec>,
+    min_points: usize,
+) -> Result<Array1<Option<usize>>> {
     // Simulated face embeddings (each row is a 128-dimensional embedding)
     let mut face_embeddings: Array2<f32> = Array2::<f32>::default((embeddings.len(), 128));
     for (i, mut row) in face_embeddings.axis_iter_mut(Axis(0)).enumerate() {
@@ -24,23 +54,21 @@ pub fn cluster_embeddings(embeddings: &Vec<FaceEmbeddingVec>, min_points: usize)
         }
     }
 
-    // Normalize embeddings (if not already normalized)
-    normalize_embeddings(&mut face_embeddings);
-
     // Create dataset
     let dataset: DatasetBase<_, _> = DatasetBase::from(face_embeddings.clone());
 
     // Configure clustering algorithm
-    let tolerance = 1.; // Adjust according to the similarity threshold
+    let tolerance = 0.2; // Adjust according to the similarity threshold
 
     tracing::debug!("Clustering {} face embeddings", dataset.nsamples());
 
     // Apply DBSCAN
     tracing::info!("Running face clustering…");
     let now = std::time::Instant::now();
-    let cluster_memberships = Dbscan::params(min_points)
-        .tolerance(tolerance)
-        .transform(dataset)?;
+    let cluster_memberships =
+        Dbscan::params_with(min_points, CosineDist, CommonNearestNeighbour::KdTree)
+            .tolerance(tolerance)
+            .transform(dataset)?;
     tracing::info!("Face clustering took {:?}", now.elapsed());
 
     let label_count = cluster_memberships.label_count().remove(0);

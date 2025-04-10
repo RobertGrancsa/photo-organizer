@@ -13,9 +13,12 @@ pub fn get_face_clusters(
     let conn = &mut pool.get().map_err(|err| err.to_string())?;
 
     let path_uuid: Option<Vec<Uuid>> = dirs.map(|directories| {
-        directories.into_iter().map(|dir| get_directory_id_by_name(conn, &*dir).expect("Should have item")
-            // .map(|dir| dir.to_string())
-        ).collect()
+        directories
+            .into_iter()
+            .map(
+                |dir| get_directory_id_by_name(conn, &*dir).expect("Should have item"), // .map(|dir| dir.to_string())
+            )
+            .collect()
     });
 
     tracing::info!("path_uuid: {:?}", path_uuid);

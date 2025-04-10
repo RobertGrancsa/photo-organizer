@@ -1,4 +1,3 @@
-use std::fs;
 use crate::APP_NAME;
 use crate::face_clustering::calculate_embeddings::run_facenet_on_faces;
 use crate::face_clustering::detect_faces::detect_faces;
@@ -10,6 +9,7 @@ use db_service::services::photo::get_photos_from_directory;
 use image::{DynamicImage, ImageFormat};
 use ort::session::Session;
 use rayon::prelude::*;
+use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 use uuid::Uuid;
@@ -20,8 +20,7 @@ fn save_cropped_faces(faces_cropped: &Vec<DynamicImage>, directory: &Path) -> Ve
         .iter()
         .map(|face| {
             let uuid = Uuid::new_v4();
-            let output_path = directory.join("faces")
-                .join(format!("{:?}.webp", uuid));
+            let output_path = directory.join("faces").join(format!("{:?}.webp", uuid));
 
             if let Err(e) = face.save_with_format(&output_path, ImageFormat::WebP) {
                 tracing::error!("Failed to save face at path {:?}: {:?}", output_path, e);
