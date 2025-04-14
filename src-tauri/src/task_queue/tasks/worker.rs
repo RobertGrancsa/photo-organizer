@@ -10,9 +10,15 @@ use image::ImageFormat;
 use rayon::prelude::*;
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::AtomicU32;
+use tauri::Emitter;
 use tokio::sync::mpsc;
 
-pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: DbPool) {
+pub async fn task_worker(
+    mut receiver: mpsc::UnboundedReceiver<Task>,
+    db_pool: DbPool,
+    app_handle: tauri::AppHandle,
+) {
     while let Some(task) = receiver.recv().await {
         let conn = &mut db_pool.get().expect("Conn is available");
         match task {
@@ -20,23 +26,25 @@ pub async fn task_worker(mut receiver: mpsc::UnboundedReceiver<Task>, db_pool: D
                 println!("Processing message: {}", msg);
             }
             Task::CreatePreviewForPhotos(dir) => {
-                match create_preview_for_photos(dir, conn).await {
+                match create_preview_for_photos(dir, conn, app_handle.clone()).await {
                     Ok(_) => {}
                     Err(err) => {
                         tracing::error!("{}", err)
                     }
                 };
             }
-            // Task::DetectObjectsFromPhotos(dir, name) => {
-            //
-            // }
             _ => {}
         }
     }
 }
 
-pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) -> Result<()> {
+pub async fn create_preview_for_photos(
+    dir: Directory,
+    conn: &mut DbPoolConn,
+    app_handle: tauri::AppHandle,
+) -> Result<()> {
     let photos = get_photos_from_directory(conn, dir.id);
+    let total_photos = photos.len();
 
     if photos.is_empty() {
         println!("No photos found in directory: {}", dir.path);
@@ -50,6 +58,31 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) ->
     fs::create_dir_all(&output_folder)?;
 
     tracing::info!("Started preview creation for: {}", dir.path);
+
+    // Emit the "preview-start" event to notify that preview generation is beginning.
+    if let Err(e) = app_handle.emit("preview-start", &dir.path) {
+        tracing::error!("Failed to emit preview-start event: {}", e);
+    }
+
+    // Create an unbounded channel for reporting progress.
+    let (progress_tx, mut progress_rx) = mpsc::unbounded_channel::<u32>();
+
+    // Spawn an async task that listens for progress messages and emits them
+    // to the front-end as percentage updates.
+    let progress_handle = {
+        let app_handle = app_handle.clone();
+        tokio::spawn(async move {
+            while let Some(completed) = progress_rx.recv().await {
+                // Calculate progress percentage.
+                let progress = (completed as f64 / total_photos as f64) * 100.0;
+                if let Err(e) = app_handle.emit("preview-progress", progress) {
+                    tracing::error!("Failed to emit preview progress: {}", e);
+                }
+                tracing::info!("Sending status {}", progress);
+            }
+        })
+    };
+    let counter = AtomicU32::new(0);
 
     photos.par_iter().for_each(|photo| {
         let input_path = Path::new(&dir.path).join(&photo.name);
@@ -78,7 +111,20 @@ pub async fn create_preview_for_photos(dir: Directory, conn: &mut DbPoolConn) ->
                 tracing::error!("Failed to open image {}: {}", photo.name, e);
             }
         }
+
+        let new_count = counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let status = progress_tx.send(new_count);
+
+        tracing::info!("Status is {:?}", status);
     });
+
+    drop(progress_tx);
+    let _ = progress_handle.await;
+
+    // Emit the "preview-end" event to notify that preview generation is complete.
+    if let Err(e) = app_handle.emit("preview-end", &dir.path) {
+        tracing::error!("Failed to emit preview-end event: {}", e);
+    }
 
     tracing::info!("Finished processing previews for directory: {}", dir.path);
     change_directories_status(conn, &dir.id, "is_imported")

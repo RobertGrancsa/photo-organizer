@@ -1,6 +1,5 @@
 use crate::db::DbPoolConn;
-use crate::schema::schema::directories;
-use crate::schema::schema::directories::dsl::directories as directories_dsl;
+use crate::schema::schema::directories::dsl::{directories as directories_dsl};
 use crate::schema::schema::directories::*;
 use crate::schema::{Directory, NewDirectory};
 use anyhow::{Result, anyhow};
@@ -24,7 +23,7 @@ pub fn get_directory_id_by_name(conn: &mut DbPoolConn, path_name: &str) -> Optio
 }
 
 pub fn insert_directory(conn: &mut DbPoolConn, new_dir: NewDirectory) -> Result<Directory> {
-    let directory = insert_into(directories::table)
+    let directory = insert_into(table)
         .values(&new_dir)
         .returning(Directory::as_returning())
         .get_result(conn)?;
@@ -66,4 +65,16 @@ pub fn get_directories_by_status(
     }?;
 
     Ok(query)
+}
+
+pub fn delete_directory_from_database(conn: &mut DbPoolConn, dir_id: &Uuid) -> Result<()> {
+    let rows_deleted = delete(directories_dsl.filter(id.eq(dir_id)))
+        .execute(conn)
+        .map_err(|e| anyhow!("Error deleting directory {}: {}", dir_id, e))?;
+
+    if rows_deleted == 0 {
+        return Err(anyhow!("No directory found with id: {}", dir_id));
+    }
+
+    Ok(())
 }

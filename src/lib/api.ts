@@ -16,3 +16,7 @@ export async function getPhotosAtPath(path: string, tagFilters: string[]): Promi
 export async function getFaceClusters(path: string): Promise<Record<string, string[]>> {
     return invoke("get_face_clusters", { dirs: [path] });
 }
+
+export async function deleteFolder(path: string): Promise<void> {
+    return invoke("delete_folder", { path });
+}

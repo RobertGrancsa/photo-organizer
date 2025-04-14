@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addFolder } from "@/lib/api";
 import { useAppDispatch } from "@/lib/hooks";
 import { setPath } from "@/contexts/slices/pathSlice";
+import { toast } from "sonner";
 
 interface ImportFolderProps {
     text: string;
@@ -37,6 +38,10 @@ const ImportFolder: React.FC<ImportFolderProps> = ({ text, variant, className })
         }
 
         mutation.mutate(dir);
+
+        toast.success("Added new folder", {
+            description: `Importing from ${dir}`,
+        });
 
         navigate("/");
     }, []);

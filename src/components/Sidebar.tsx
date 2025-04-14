@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { File, Folder, Tree, TreeViewElement } from "@/components/magicui/file-tree";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { selectCurrentFolder, setPath } from "@/contexts/slices/pathSlice";
@@ -9,6 +9,8 @@ import { Folder as FolderType, Photo } from "@/types";
 import ImportFolder from "@/components/folders/ImportFolder";
 import { clearSelectedPhotos, clearSelectedTags } from "@/contexts/slices/photosSlice";
 import { useNavigate } from "react-router";
+import PreviewProgress from "@/components/notifications/PreviewNotifier";
+import SidebarContextMenu from "@/components/menu/SidebarMenu";
 
 const ELEMENTS = [
     {
@@ -62,6 +64,7 @@ const folderToTreeElement = (folder: FolderType): TreeViewElement => ({
 });
 
 const Sidebar: React.FC = () => {
+    const [activeTreeElement, setActiveTreeElement] = useState<FolderType | Photo | null>(null);
     const currentFolder = useAppSelector(selectCurrentFolder);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -90,6 +93,9 @@ const Sidebar: React.FC = () => {
                         dispatch(clearSelectedPhotos());
                         navigate("/" + item.id);
                     }}
+                    onContextMenu={() => {
+                        setActiveTreeElement(item);
+                    }}
                 >
                     {mapFolder(item.children)}
                 </Folder>
@@ -105,38 +111,12 @@ const Sidebar: React.FC = () => {
     return (
         <>
             <ImportFolder text="Import folder" variant="default" className="m-2" />
-
-            <Tree className="overflow-hidden rounded-md bg-background p-2" initialSelectedId={currentFolder.id} elements={elements}>
-                {mapFolder(folders)}
-                <Folder element="src" value="1">
-                    <Folder value="2" element="app">
-                        <File value="3">
-                            <p>layout.tsx</p>
-                        </File>
-                        <File value="4">
-                            <p>page.tsx</p>
-                        </File>
-                    </Folder>
-                    <Folder value="5" element="components">
-                        <Folder value="6" element="ui">
-                            <File value="7">
-                                <p>button.tsx</p>
-                            </File>
-                        </Folder>
-                        <File value="8">
-                            <p>header.tsx</p>
-                        </File>
-                        <File value="9">
-                            <p>footer.tsx</p>
-                        </File>
-                    </Folder>
-                    <Folder value="10" element="lib">
-                        <File value="11">
-                            <p>utils.ts</p>
-                        </File>
-                    </Folder>
-                </Folder>
-            </Tree>
+            <PreviewProgress />
+            <SidebarContextMenu activeTreeElement={activeTreeElement}>
+                <Tree className="overflow-hidden rounded-md bg-background p-2" initialSelectedId={currentFolder.id} elements={elements}>
+                    {mapFolder(folders)}
+                </Tree>
+            </SidebarContextMenu>
         </>
     );
 };

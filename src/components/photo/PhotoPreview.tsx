@@ -35,6 +35,8 @@ const PhotoPreview: React.FC<PhotoProps> = ({ photo, index }) => {
     const imgRef = useRef<HTMLImageElement>(null);
 
     useEffect(() => {
+        setError(false);
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
@@ -68,7 +70,7 @@ const PhotoPreview: React.FC<PhotoProps> = ({ photo, index }) => {
                         whileTap={{ scale: 0.95 }}
                         src={previewPath}
                         alt={photo.name}
-                        onError={(err) => setError(true)}
+                        onError={() => setError(true)}
                     />
                 )}
                 {!loaded && <Skeleton className="h-full aspect-3/2" />}

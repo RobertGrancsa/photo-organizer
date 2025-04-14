@@ -45,6 +45,7 @@ impl<F: Float> Distance<F> for CosineDist {
 pub fn cluster_embeddings(
     embeddings: &Vec<FaceEmbeddingVec>,
     min_points: usize,
+    eps: f32,
 ) -> Result<Array1<Option<usize>>> {
     // Simulated face embeddings (each row is a 128-dimensional embedding)
     let mut face_embeddings: Array2<f32> = Array2::<f32>::default((embeddings.len(), 128));
@@ -57,17 +58,14 @@ pub fn cluster_embeddings(
     // Create dataset
     let dataset: DatasetBase<_, _> = DatasetBase::from(face_embeddings.clone());
 
-    // Configure clustering algorithm
-    let tolerance = 0.2; // Adjust according to the similarity threshold
-
     tracing::debug!("Clustering {} face embeddings", dataset.nsamples());
 
     // Apply DBSCAN
     tracing::info!("Running face clustering…");
     let now = std::time::Instant::now();
     let cluster_memberships =
-        Dbscan::params_with(min_points, CosineDist, CommonNearestNeighbour::KdTree)
-            .tolerance(tolerance)
+        Dbscan::params_with(min_points, CosineDist, CommonNearestNeighbour::LinearSearch)
+            .tolerance(eps)
             .transform(dataset)?;
     tracing::info!("Face clustering took {:?}", now.elapsed());
 
@@ -94,7 +92,13 @@ pub fn cluster_embeddings(
 pub fn cluster_faces(conn: &mut DbPoolConn) -> Result<()> {
     let embedding = get_all_embeddings(conn)?;
 
-    let clusters = cluster_embeddings(&embedding, 2)?;
+    let clusters = cluster_embeddings(&embedding, 2, 0.2)?;
+
+    for i in 1..11 {
+        let eps = 0.1 * i as f32;
+        tracing::info!("Testing with eps {:.2}", eps);
+        cluster_embeddings(&embedding, 2, eps)?;
+    }
 
     assign_clusters(embedding, clusters.to_vec(), conn)?;
 

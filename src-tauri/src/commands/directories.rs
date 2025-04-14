@@ -1,18 +1,18 @@
+use crate::task_queue::tasks::Task;
+use crate::task_queue::TaskQueue;
+use crate::APP_NAME;
+use db_service::db::DbPool;
+use db_service::schema::{Directory, NewDirectory};
+use db_service::services::directory::{
+    delete_directory_from_database, get_directories, get_directory_id_by_name, insert_directory,
+};
+use db_service::services::photo::insert_photos_from_directory;
+use std::fs;
+use std::path::Path;
 use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
 use uuid::Uuid;
-
-use crate::commands::types::PhotoData;
-use crate::task_queue::tasks::Task;
-use crate::task_queue::TaskQueue;
-use db_service::db::DbPool;
-use db_service::schema::{Directory, NewDirectory};
-use db_service::services::directory::{
-    get_directories, get_directory_id_by_name, insert_directory,
-};
-use db_service::services::photo::{get_photos_filtered, insert_photos_from_directory};
-use db_service::services::tags::get_unique_filters;
 
 #[tauri::command]
 pub fn get_folders(pool: State<DbPool>) -> Result<Vec<Directory>, String> {
@@ -47,29 +47,38 @@ pub async fn add_folder(
 }
 
 #[tauri::command]
-pub fn get_photos_from_path(
-    pool: State<DbPool>,
-    path: &str,
-    tag_filters: Vec<String>,
-) -> Result<PhotoData, String> {
+pub fn delete_folder(pool: State<'_, DbPool>, path: &str) -> Result<(), String> {
     let conn = &mut pool.get().map_err(|e| e.to_string())?;
 
     let path_uuid: Option<Uuid> = get_directory_id_by_name(conn, path);
 
-    // If no UUID is found, return an empty list
     let path_uuid = match path_uuid {
         Some(uuid) => uuid,
         None => {
             tracing::error!("No UUID found for path: {}", path);
-            return Ok(PhotoData {
-                photos: vec![],
-                tags: vec![],
-            });
+            return Ok(());
         }
     };
 
-    Ok(PhotoData {
-        photos: get_photos_filtered(conn, path_uuid, tag_filters).map_err(|e| e.to_string())?,
-        tags: get_unique_filters(conn, path_uuid).map_err(|e| e.to_string())?,
-    })
+    let delete_status = delete_directory_from_database(conn, &path_uuid);
+
+    if let Err(e) = delete_status {
+        return Err(e.to_string());
+    }
+
+    let local_photo_path = dirs::data_local_dir()
+        .unwrap_or_else(|| Path::new(".").to_path_buf())
+        .join(APP_NAME)
+        .join(path_uuid.to_string());
+
+    if local_photo_path.exists() {
+        fs::remove_dir_all(&local_photo_path).map_err(|e| {
+            format!(
+                "Error deleting directory at path {:?}: {}",
+                local_photo_path, e
+            )
+        })?;
+    }
+
+    Ok(())
 }
