@@ -36,6 +36,7 @@ const PhotoPreview: React.FC<PhotoProps> = ({ photo, index }) => {
 
     useEffect(() => {
         setError(false);
+        setLoaded(false);
 
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {

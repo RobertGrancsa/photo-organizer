@@ -21,8 +21,6 @@ pub fn get_face_clusters(
             .collect()
     });
 
-    tracing::info!("path_uuid: {:?}", path_uuid);
-
     let clusters = fetch_faces_grouped(conn, path_uuid).map_err(|err| err.to_string())?;
 
     Ok(clusters)

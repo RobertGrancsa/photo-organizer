@@ -1,7 +1,7 @@
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
-import { FileIcon, FolderIcon, FolderOpenIcon } from "lucide-react";
-import { createContext, forwardRef, useCallback, useContext, useEffect, useState } from "react";
+import { FileIcon, FolderIcon, FolderOpenIcon, Images } from "lucide-react";
 import * as React from "react";
+import { createContext, forwardRef, useCallback, useContext, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -295,4 +295,43 @@ const CollapseButton = forwardRef<
 
 CollapseButton.displayName = "CollapseButton";
 
-export { CollapseButton, File, Folder, Tree, type TreeViewElement };
+type FolderItemWithCountProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    folderName: string;
+    count: number;
+    value: string;
+};
+
+const FolderItemWithCount = forwardRef<HTMLButtonElement, FolderItemWithCountProps>(
+    ({ folderName, count, className, value, onClick, ...props }, ref) => {
+        console.log(value, "value");
+        const { selectedId, selectItem } = useTree();
+        const isSelected = selectedId === value;
+
+        return (
+            <button
+                ref={ref}
+                type="button"
+                className={cn(
+                    "flex items-center justify-between gap-1 pr-1 duration-200 ease-in-out rounded-md text-sm cursor-pointer",
+                    className,
+                    {
+                        "bg-muted": isSelected,
+                    }
+                )}
+                onClick={(e) => {
+                    onClick && onClick(e);
+                    selectItem(value);
+                }}
+                {...props}
+            >
+                <div className="flex items-center">
+                    <Images className="size-4" />
+                    <span>{folderName}</span>
+                </div>
+                <span className="text-xs text-gray-600">{count}</span>
+            </button>
+        );
+    }
+);
+
+export { CollapseButton, File, Folder, Tree, type TreeViewElement, FolderItemWithCount };

@@ -11,6 +11,7 @@ pub mod types;
 #[derive(Queryable, Selectable, Serialize, Clone)]
 #[diesel(table_name = crate::schema::schema::directories)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[serde(rename_all = "camelCase")]
 pub struct Directory {
     pub id: Uuid,
     pub path: String,
@@ -32,6 +33,7 @@ pub struct NewDirectory {
 #[derive(Queryable, Selectable, Deserialize, Serialize, Insertable, Clone)]
 #[diesel(table_name = crate::schema::schema::photos)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+#[serde(rename_all = "camelCase")]
 pub struct Photo {
     pub id: Uuid,
     pub path: Uuid,

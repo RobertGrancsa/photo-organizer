@@ -40,9 +40,9 @@ const SidebarContextMenu: React.FC<PropsWithChildren<SidebarContextMenuProps>> =
         <ContextMenu>
             <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
             <ContextMenuContent className="w-64">
-                <ContextMenuItem inset onClick={deleteCurrentFolder}>
+                <ContextMenuItem variant="destructive" inset onClick={deleteCurrentFolder}>
                     Delete
-                    <ContextMenuShortcut>⌘[</ContextMenuShortcut>
+                    <ContextMenuShortcut>Del</ContextMenuShortcut>
                 </ContextMenuItem>
                 <ContextMenuItem inset disabled>
                     Forward
