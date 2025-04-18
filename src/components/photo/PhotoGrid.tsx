@@ -1,11 +1,10 @@
 import * as React from "react";
-import { UIEventHandler, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Photo } from "@/types";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { LayoutGroup } from "framer-motion";
-import { useAppSelector } from "@/lib/hooks";
-import { selectCurrentPhoto } from "@/contexts/slices/photosSlice";
 import PhotoWithHover from "@/components/photo/PhotoWithHover";
+import { useParams } from "react-router";
 
 interface PhotoGridProps {
     photos: Photo[];
@@ -14,47 +13,65 @@ interface PhotoGridProps {
 
 const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, columnCount = 3 }) => {
     const parentRef = useRef<HTMLDivElement>(null);
-    const [initialOffset, setInitialOffset] = useState<number>(0);
-    const selectedPhoto = useAppSelector(selectCurrentPhoto);
+    const { directory } = useParams<{ directory: string }>();
+    const [sessionOffset, setSessionOffset] = useState<number>(0);
 
+    const getScrollKey = React.useCallback(() => (directory ? `galleryScrollOffset_${directory}` : "galleryScrollOffset"), [directory]);
+
+    // On mount or directory change, read scroll offset from session storage
     useEffect(() => {
-        const savedScrollOffset = sessionStorage.getItem("galleryScrollOffset");
-        setInitialOffset(savedScrollOffset ? Number(savedScrollOffset) : 0);
-    }, [selectedPhoto]);
+        const rawOffset = sessionStorage.getItem(getScrollKey());
+        const offset = rawOffset ? Number(rawOffset) : 0;
+        setSessionOffset(offset);
+    }, [directory, getScrollKey]);
 
+    // For the virtualizer
     const rowCount = Math.ceil(photos?.length / columnCount);
 
     const calculateHeight = useCallback(() => {
-        if (!parentRef.current) {
-            return 280;
-        }
-
+        if (!parentRef.current) return 280;
         const width = parentRef.current.getBoundingClientRect().width;
-
         return Math.floor((width / columnCount / 3) * 2);
-    }, [parentRef.current, columnCount]);
+    }, [columnCount]);
 
-    console.log("setScroll", initialOffset);
-
-    // Set up the virtualizer for rows using variable sizes
+    // NOTE: initialOffset will only be used on first mount per instance
     const rowVirtualizer = useVirtualizer({
         count: rowCount,
         getScrollElement: () => parentRef.current,
         estimateSize: calculateHeight,
         overscan: 5,
         useAnimationFrameWithResizeObserver: true,
-        initialOffset,
+        initialOffset: sessionOffset,
         gap: 4,
     });
 
-    // @ts-ignore
-    const updateIfScrolling = (e: UIEventHandler<HTMLDivElement, UIEvent>) => {
-        sessionStorage.setItem("galleryScrollOffset", e.currentTarget.scrollTop.toString());
+    // Restore DOM scrollTop on directory change
+    useEffect(() => {
+        if (!parentRef.current) return;
+        const rawOffset = sessionStorage.getItem(getScrollKey());
+        // Scroll DOM container directly
+        parentRef.current.scrollTop = rawOffset ? Number(rawOffset) : 0;
+    }, [directory, photos.length, getScrollKey]);
+
+    // Re-measure on resize
+    useEffect(() => {
+        if (!parentRef.current) return;
+        const handleResize = () => rowVirtualizer.measure();
+        const resizeObserver = new ResizeObserver(handleResize);
+        resizeObserver.observe(parentRef.current);
+        window.addEventListener("resize", handleResize);
+        return () => {
+            resizeObserver.disconnect();
+            window.removeEventListener("resize", handleResize);
+        };
+    }, [rowVirtualizer]);
+
+    // Save scroll position per directory to session storage
+    const updateIfScrolling = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+        sessionStorage.setItem(getScrollKey(), e.currentTarget.scrollTop.toString());
     };
 
-    if (!photos?.length) {
-        return null;
-    }
+    if (!photos?.length) return null;
 
     return (
         <LayoutGroup>
