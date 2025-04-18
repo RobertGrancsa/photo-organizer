@@ -8,7 +8,7 @@ interface PathState {
 }
 
 const initialState: PathState = {
-    folder: { id: "", path: "", isImported: false },
+    folder: { id: "", path: "", isImported: false, photoCount: 0 },
     previewsDir: "",
 };
 

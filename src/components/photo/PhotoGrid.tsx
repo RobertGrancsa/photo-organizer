@@ -30,6 +30,7 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, columnCount = 3 }) => {
 
     const calculateHeight = useCallback(() => {
         if (!parentRef.current) return 280;
+
         const width = parentRef.current.getBoundingClientRect().width;
         return Math.floor((width / columnCount / 3) * 2);
     }, [columnCount]);

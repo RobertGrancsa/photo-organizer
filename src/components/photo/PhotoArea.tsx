@@ -23,6 +23,17 @@ const PhotoArea: React.FC = () => {
         }
     }, [directory]);
 
+    // Listen for localStorage changes (from other tabs/windows)
+    useEffect(() => {
+        const handler = (e: StorageEvent) => {
+            if (e.key === "photosGridSize" && e.newValue) {
+                setGridSize(JSON.parse(e.newValue));
+            }
+        };
+        window.addEventListener("storage", handler);
+        return () => window.removeEventListener("storage", handler);
+    }, []);
+
     return (
         <>
             <div className="h-12 border-b flex justify-center items-center space-x-2 px-4">
@@ -34,14 +45,16 @@ const PhotoArea: React.FC = () => {
                 </Button>
                 <Slider
                     className="w-80"
+                    defaultValue={gridSize}
+                    // Only commit updates gridSize state and localStorage
                     onValueCommit={(e) => {
                         setGridSize([e[0]]);
-                        localStorage.setItem("photosGridSize", JSON.stringify(e));
+                        localStorage.setItem("photosGridSize", JSON.stringify([e[0]]));
                     }}
-                    defaultValue={gridSize}
                     max={16}
                     step={1}
                     min={3}
+                    key={gridSize[0]} // This ensures Slider resets if grid size changes externally
                 />
             </div>
             {filtersOpen && <TagFilters />}
