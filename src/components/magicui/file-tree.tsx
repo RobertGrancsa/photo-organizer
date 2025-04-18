@@ -303,7 +303,6 @@ type FolderItemWithCountProps = React.ButtonHTMLAttributes<HTMLButtonElement> & 
 
 const FolderItemWithCount = forwardRef<HTMLButtonElement, FolderItemWithCountProps>(
     ({ folderName, count, className, value, onClick, ...props }, ref) => {
-        console.log(value, "value");
         const { selectedId, selectItem } = useTree();
         const isSelected = selectedId === value;
 

@@ -1,80 +1,64 @@
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { listen } from "@tauri-apps/api/event";
 import { Progress } from "@/components/ui/progress";
 import { Toaster } from "../ui/sonner";
 
-const PreviewToast = ({ progress }) => {
-    return (
-        <div style={{ padding: "1rem", minWidth: "250px" }}>
-            <p style={{ marginBottom: "0.5rem" }}>
-                {progress < 100 ? `Generating previews... ${progress.toFixed(2)}%` : "Preview generation complete!"}
-            </p>
-            <Progress value={progress} max={100} />
-        </div>
-    );
-};
+const PreviewToast = ({ progress }) => (
+    <div style={{ padding: "1rem", minWidth: "250px" }}>
+        <p style={{ marginBottom: "0.5rem" }}>
+            {progress < 100 ? `Generating previews... ${progress.toFixed(2)}%` : "Preview generation complete!"}
+        </p>
+        <Progress value={progress} max={100} />
+    </div>
+);
 
 const PreviewNotifier = () => {
-    // Holds the active toast id so we can update/dismiss it.
-    const [toastId, setToastId] = useState(null);
+    const [progress, setProgress] = useState(0);
+    const toastIdRef = useRef<string | number | null>(null);
 
     useEffect(() => {
-        console.log("setting up preview for toast", toastId);
-
-        // Listen for the "preview-start" event.
+        // preview-start: Create toast if not already present
+        console.log(toastIdRef.current, "current toast id");
         const startUnlisten = listen<string>("preview-start", () => {
-            // Create a new custom toast only if one does not exist yet.
-            if (!toastId) {
-                const id = toast(<PreviewToast progress={0} />, {
+            if (!toastIdRef.current) {
+                toastIdRef.current = toast(<PreviewToast progress={0} />, {
                     duration: Infinity,
-                    // You can add additional options if needed.
+                    dismissible: true,
                 });
-                setToastId(id);
+                setProgress(0);
             }
         });
 
-        // Listen for the "preview-progress" event.
+        // preview-progress: Update the progress state (and thus the toast)
         const progressUnlisten = listen<number>("preview-progress", (event) => {
             const newProgress = event.payload;
-            console.log(newProgress);
-            console.log(toastId);
-            if (toastId !== null) {
-                // Update the toast content with the new progress value.
-                toast(<PreviewToast progress={newProgress} />, { id: toastId });
-            } else {
-                setToastId((oldId) => {
-                    if (oldId) return oldId;
-
-                    return toast(<PreviewToast progress={newProgress} />, {
-                        duration: Infinity,
-                    });
-                });
+            setProgress(newProgress);
+            console.log(newProgress, "new progress");
+            if (toastIdRef.current) {
+                toast(<PreviewToast progress={newProgress} />, { id: toastIdRef.current });
             }
         });
 
-        // Listen for the "preview-end" event.
+        // preview-end: Set progress to complete, show success and clean up
         const endUnlisten = listen<string>("preview-end", () => {
-            if (toastId !== null) {
-                // Ensure the progress reaches 100%.
-                toast.success(<PreviewToast progress={100} />, { id: toastId });
-                // Dismiss the toast 4 seconds after completion.
+            if (toastIdRef.current) {
+                toast.success(<PreviewToast progress={100} />, { id: toastIdRef.current });
                 setTimeout(() => {
-                    toast.dismiss(toastId);
-                    setToastId(null);
+                    toast.dismiss(toastIdRef.current!);
+                    toastIdRef.current = null;
+                    setProgress(0);
                 }, 4000);
             }
         });
 
-        // Cleanup: Unsubscribe from events when the component unmounts.
         return () => {
-            console.log("unlistening");
             startUnlisten.then((fn) => fn());
             progressUnlisten.then((fn) => fn());
             endUnlisten.then((fn) => fn());
         };
-    }, [toastId]);
+    }, [toastIdRef.current]);
 
     return <Toaster visibleToasts={5} />;
 };

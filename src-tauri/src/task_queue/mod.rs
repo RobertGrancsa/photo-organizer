@@ -3,6 +3,7 @@ pub mod tasks;
 use crate::task_queue::tasks::Task;
 use tokio::sync::mpsc;
 
+#[derive(Debug)]
 pub struct TaskQueue {
     sender: mpsc::UnboundedSender<Task>,
 }

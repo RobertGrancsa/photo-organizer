@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use tauri::State;
 use uuid::Uuid;
 
+#[tracing::instrument]
 #[tauri::command]
 pub fn get_face_clusters(
     pool: State<DbPool>,

@@ -7,6 +7,7 @@ use db_service::services::directory::get_directory_id_by_name;
 use db_service::services::photo::get_photos_filtered;
 use db_service::services::tags::get_unique_filters;
 
+#[tracing::instrument]
 #[tauri::command]
 pub fn get_photos_from_path(
     pool: State<DbPool>,

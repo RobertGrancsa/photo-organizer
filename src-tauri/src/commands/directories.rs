@@ -14,6 +14,7 @@ use tauri::State;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
+#[tracing::instrument]
 #[tauri::command]
 pub fn get_folders(pool: State<DbPool>) -> Result<Vec<Directory>, String> {
     let conn = &mut pool.get().map_err(|err| err.to_string())?;
@@ -21,6 +22,7 @@ pub fn get_folders(pool: State<DbPool>) -> Result<Vec<Directory>, String> {
     get_directories(conn).map_err(|err| err.to_string())
 }
 
+#[tracing::instrument]
 #[tauri::command]
 pub async fn add_folder(
     pool: State<'_, DbPool>,
@@ -46,6 +48,7 @@ pub async fn add_folder(
     Ok(dir_record)
 }
 
+#[tracing::instrument]
 #[tauri::command]
 pub fn delete_folder(pool: State<'_, DbPool>, path: &str) -> Result<(), String> {
     let conn = &mut pool.get().map_err(|e| e.to_string())?;

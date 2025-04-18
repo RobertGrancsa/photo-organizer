@@ -2,9 +2,9 @@ import * as React from "react";
 import { createBrowserRouter } from "react-router";
 import HeroPage from "@/pages/HeroPage";
 import HomePage from "@/pages/HomePage";
-import PhotoDisplay from "@/components/photo/PhotoDisplay";
 import { Loader } from "lucide-react";
 import PhotoArea from "@/components/photo/PhotoArea";
+import PhotoCarousel from "@/components/photo/PhotoCarousel";
 
 const router = createBrowserRouter([
     {
@@ -17,7 +17,7 @@ const router = createBrowserRouter([
             },
             {
                 path: "/:directory/:name",
-                element: <PhotoDisplay />,
+                element: <PhotoCarousel />,
             },
         ],
     },

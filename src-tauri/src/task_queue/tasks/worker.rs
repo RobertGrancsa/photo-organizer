@@ -11,8 +11,10 @@ use rayon::prelude::*;
 use std::fs;
 use std::path::Path;
 use std::sync::atomic::AtomicU32;
+use std::time::Duration;
 use tauri::Emitter;
 use tokio::sync::mpsc;
+use tokio::time::sleep;
 
 pub async fn task_worker(
     mut receiver: mpsc::UnboundedReceiver<Task>,
@@ -26,6 +28,7 @@ pub async fn task_worker(
                 println!("Processing message: {}", msg);
             }
             Task::CreatePreviewForPhotos(dir) => {
+                sleep(Duration::from_secs(10)).await;
                 match create_preview_for_photos(dir, conn, app_handle.clone()).await {
                     Ok(_) => {}
                     Err(err) => {
@@ -72,6 +75,7 @@ pub async fn create_preview_for_photos(
     let progress_handle = {
         let app_handle = app_handle.clone();
         tokio::spawn(async move {
+            tracing::warn!("Starting progress listener");
             while let Some(completed) = progress_rx.recv().await {
                 // Calculate progress percentage.
                 let progress = (completed as f64 / total_photos as f64) * 100.0;

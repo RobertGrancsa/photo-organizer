@@ -1,15 +1,14 @@
 import * as React from "react";
 import { useMemo, useState } from "react";
-import { FolderItemWithCount, Folder, Tree, TreeViewElement } from "@/components/magicui/file-tree";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { selectCurrentFolder, setPath } from "@/contexts/slices/pathSlice";
+import { Folder, FolderItemWithCount, Tree, TreeViewElement } from "@/components/magicui/file-tree";
+import { useAppDispatch } from "@/lib/hooks";
+import { setPath } from "@/contexts/slices/pathSlice";
 import { useQuery } from "@tanstack/react-query";
 import { getFolders } from "@/lib/api";
-import { Folder as FolderType, Photo } from "@/types";
+import { Folder as FolderType } from "@/types";
 import ImportFolder from "@/components/folders/ImportFolder";
 import { clearSelectedPhotos, clearSelectedTags } from "@/contexts/slices/photosSlice";
 import { useNavigate } from "react-router";
-import PreviewProgress from "@/components/notifications/PreviewNotifier";
 import SidebarContextMenu from "@/components/menu/SidebarMenu";
 
 /**
@@ -124,7 +123,6 @@ const folderToTreeElement = (folder: GroupedFolderType): TreeViewElement => ({
 
 const Sidebar: React.FC = () => {
     const [activeTreeElement, setActiveTreeElement] = useState<GroupedFolderType | null>(null);
-    const currentFolder = useAppSelector(selectCurrentFolder);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const { isLoading, data: folders } = useQuery({ queryKey: ["folders"], queryFn: getFolders });
@@ -163,7 +161,7 @@ const Sidebar: React.FC = () => {
                         dispatch(clearSelectedPhotos());
                         navigate("/" + item.id);
                     }}
-                    onContextMenu={(e) => {
+                    onContextMenu={() => {
                         // e.preventDefault(); // Prevent the default browser context menu.
                         // Only set active tree element for non-drive-group nodes.
                         setActiveTreeElement(item);
@@ -178,12 +176,10 @@ const Sidebar: React.FC = () => {
     if (isLoading) {
         return null;
     }
-    console.log(folders);
 
     return (
         <>
             <ImportFolder text="Import folder" variant="default" className="m-2" />
-            <PreviewProgress />
             <SidebarContextMenu activeTreeElement={activeTreeElement}>
                 <Tree
                     className="overflow-hidden rounded-md bg-background p-2"
