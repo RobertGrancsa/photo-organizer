@@ -3,23 +3,31 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectPhotos, selectSelectedPhotoIndex, setSelectedPhoto } from "@/contexts/slices/photosSlice";
 import { useParams, useNavigate } from "react-router";
-import { getPhotoPath } from "@/lib/utils";
-import { selectCurrentPath } from "@/contexts/slices/pathSlice";
+import { getPhotoPath, getPreviewPath } from "@/lib/utils";
+import { selectCurrentPath, selectPreviewDir } from "@/contexts/slices/pathSlice";
 import useEmblaCarousel from "embla-carousel-react";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const LAZY_RANGE = 3;
+const THUMB_SIZE = 72; // Size of thumbnails in pixels
 
 const PhotoCarousel: React.FC = () => {
     const photos = useSelector(selectPhotos);
     const selectedIndex = useSelector(selectSelectedPhotoIndex);
     const currentPath = useSelector(selectCurrentPath);
+    const previewDir = useSelector(selectPreviewDir);
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { directory, name } = useParams<{ directory?: string; name?: string }>();
+    const { directory } = useParams<{ directory: string; name: string }>();
 
     const [emblaRef, emblaApi] = useEmblaCarousel({ skipSnaps: false, loop: true });
+    const [thumbRef, thumbApi] = useEmblaCarousel({
+        containScroll: "keepSnaps",
+        dragFree: true,
+        axis: "x",
+    });
+
     const ignoreSetPhoto = useRef(false);
     const [emblaIndex, setEmblaIndex] = useState(selectedIndex ?? 0);
 
@@ -28,38 +36,39 @@ const PhotoCarousel: React.FC = () => {
     const carouselWrapperRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        if (typeof selectedIndex === "number") setEmblaIndex(selectedIndex);
+        if (typeof selectedIndex === "number") {
+            setEmblaIndex(selectedIndex);
+        }
     }, [selectedIndex]);
 
     useEffect(() => {
         if (!emblaApi || selectedIndex == null) return;
+
         ignoreSetPhoto.current = true;
         emblaApi.scrollTo(selectedIndex, false);
+
         setTimeout(() => (ignoreSetPhoto.current = false), 100);
     }, [emblaApi, selectedIndex]);
 
-    useEffect(() => {
-        if (!photos.length || typeof name !== "string") return;
-        const idx = photos.findIndex((p: any) => p.name === name);
-        if (idx !== -1) {
-            dispatch(setSelectedPhoto({ photo: photos[idx], index: idx }));
-        }
-    }, [name, photos, dispatch]);
-
     const onSelect = useCallback(() => {
-        if (!emblaApi) return;
+        if (!emblaApi || !thumbApi) return;
         const idx = emblaApi.selectedScrollSnap();
         setEmblaIndex(idx);
+        thumbApi.scrollTo(idx);
+
         if (ignoreSetPhoto.current) return;
+
         if (photos[idx] && selectedIndex !== idx) {
             navigate(`/${directory}/${photos[idx].name}`, { replace: true });
             dispatch(setSelectedPhoto({ photo: photos[idx], index: idx }));
         }
-    }, [emblaApi, photos, dispatch, selectedIndex, navigate, directory]);
+    }, [emblaApi, photos, dispatch, selectedIndex, navigate, directory, thumbApi, setEmblaIndex]);
 
     useEffect(() => {
         if (!emblaApi) return;
-        emblaApi.on("select", onSelect);
+
+        emblaApi.on("select", onSelect).on("reInit", onSelect);
+
         return () => emblaApi.off("select", onSelect) as never;
     }, [emblaApi, onSelect]);
 
@@ -113,6 +122,11 @@ const PhotoCarousel: React.FC = () => {
         }
     };
 
+    // Thumbnail click handler
+    const handleThumbnailClick = (idx: number) => {
+        emblaApi?.scrollTo(idx);
+    };
+
     if (!photos.length || selectedIndex == null) return null;
 
     // Mode-dependent classes
@@ -127,8 +141,24 @@ const PhotoCarousel: React.FC = () => {
     const toggleBtnClass = isFullscreen ? "absolute top-6 right-6 z-50 flex items-center" : "absolute top-2 right-2 z-30 flex items-center";
 
     const infoContainerClass = isFullscreen
-        ? "absolute bottom-8 left-0 right-0 flex flex-col items-center"
-        : "mt-4 flex flex-col items-center w-full";
+        ? "absolute top-8 left-0 right-0 flex flex-col items-center"
+        : "mt-4 flex flex-col items-center text-align-left w-full absolute top-8 left-0 right-0";
+
+    const thumbnailBarClass = isFullscreen
+        ? "absolute bottom-4 left-0 right-0 flex justify-center pointer-events-auto z-50"
+        : "mt-4 mb-2 flex justify-center w-full";
+
+    const thumbnailScrollerClass =
+        "flex gap-2 overflow-x-auto px-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent w-full";
+
+    // Highlight selected thumbnail
+    const thumbnailButtonClass = (idx: number) =>
+        `border-2 rounded-md bg-black/80 overflow-hidden flex-shrink-0 w-[${THUMB_SIZE}px] h-[${THUMB_SIZE}px] transition-all duration-150
+        ${
+            selectedIndex === idx
+                ? "border-indigo-500 ring-2 ring-indigo-400"
+                : "border-transparent opacity-75 hover:opacity-100 hover:border-indigo-300"
+        }`;
 
     // Framer Motion variants for button animations
     const buttonVariants = {
@@ -202,7 +232,7 @@ const PhotoCarousel: React.FC = () => {
                         whileHover="hover"
                         whileTap="tap"
                     >
-                        <span className="text-4xl">&#8249;</span>
+                        <ChevronLeft className="h-6 w-6" />
                     </motion.button>
                 </AnimatePresence>
                 {/* Right Arrow */}
@@ -220,19 +250,43 @@ const PhotoCarousel: React.FC = () => {
                         whileHover="hover"
                         whileTap="tap"
                     >
-                        <span className="text-4xl">&#8250;</span>
+                        <ChevronRight className="h-6 w-6" />
                     </motion.button>
                 </AnimatePresence>
                 {/* Info */}
                 <div className={infoContainerClass}>
-                    <div className="text-base md:text-lg text-gray-200">
+                    <div className="text-base md:text-lg text-gray-200 text-left w-full px-12">
                         {selectedIndex + 1} / {photos.length}
                     </div>
-                    <div className="mt-2 text-lg md:text-xl font-medium text-center text-white line-clamp-1 max-w-xl selection:bg-indigo-900/80 selection:text-white">
+                    <div className="mt-2 text-lg md:text-xl font-medium text-white line-clamp-1 text-left w-full px-12 selection:bg-indigo-900/80 selection:text-white">
                         {photos[selectedIndex]?.name}
                     </div>
                 </div>
             </div>
+            {/* Thumbnails Bar */}
+            {!isFullscreen && (
+                <div className={thumbnailBarClass}>
+                    <div ref={thumbRef} className={`${thumbnailScrollerClass}`}>
+                        {photos.map((photo, idx) => (
+                            <button
+                                type="button"
+                                key={photo.name}
+                                className={thumbnailButtonClass(idx)}
+                                aria-label={`Select photo ${idx + 1}`}
+                                onClick={() => handleThumbnailClick(idx)}
+                            >
+                                <img
+                                    src={getPreviewPath(directory, photo.id, previewDir)}
+                                    alt={photo.name}
+                                    className={`object-cover w-full h-full select-none ${selectedIndex === idx ? "opacity-100" : "opacity-70"}`}
+                                    draggable={false}
+                                    style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
+                                />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
