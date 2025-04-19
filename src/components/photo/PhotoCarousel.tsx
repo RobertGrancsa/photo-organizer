@@ -12,6 +12,15 @@ import { motion, AnimatePresence } from "framer-motion";
 const LAZY_RANGE = 3;
 const THUMB_SIZE = 72; // Size of thumbnails in pixels
 
+// Framer Motion variants for button animations
+const buttonVariants = {
+    initial: { opacity: 0, scale: 0.8 },
+    animate: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 20 } },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.15 } },
+    hover: { scale: 1.1 },
+    tap: { scale: 0.93 },
+};
+
 const PhotoCarousel: React.FC = () => {
     const photos = useSelector(selectPhotos);
     const selectedIndex = useSelector(selectSelectedPhotoIndex);
@@ -51,10 +60,10 @@ const PhotoCarousel: React.FC = () => {
     }, [emblaApi, selectedIndex]);
 
     const onSelect = useCallback(() => {
-        if (!emblaApi || !thumbApi) return;
+        if (!emblaApi) return;
         const idx = emblaApi.selectedScrollSnap();
         setEmblaIndex(idx);
-        thumbApi.scrollTo(idx);
+        thumbApi?.scrollTo(idx);
 
         if (ignoreSetPhoto.current) return;
 
@@ -98,7 +107,7 @@ const PhotoCarousel: React.FC = () => {
         }
         document.addEventListener("fullscreenchange", handleFSChange);
         return () => document.removeEventListener("fullscreenchange", handleFSChange);
-    }, [isFullscreen]);
+    }, []);
 
     useEffect(() => {
         if (!emblaApi) return;
@@ -144,12 +153,9 @@ const PhotoCarousel: React.FC = () => {
         ? "absolute top-8 left-0 right-0 flex flex-col items-center"
         : "mt-4 flex flex-col items-center text-align-left w-full absolute top-8 left-0 right-0";
 
-    const thumbnailBarClass = isFullscreen
-        ? "absolute bottom-4 left-0 right-0 flex justify-center pointer-events-auto z-50"
-        : "mt-4 mb-2 flex justify-center w-full";
+    const thumbnailBarClass = "mt-2 mb-2 flex justify-center scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent";
 
-    const thumbnailScrollerClass =
-        "flex gap-2 overflow-x-auto px-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent w-full";
+    const thumbnailScrollerClass = "overflow-x-hidden px-4";
 
     // Highlight selected thumbnail
     const thumbnailButtonClass = (idx: number) =>
@@ -159,15 +165,6 @@ const PhotoCarousel: React.FC = () => {
                 ? "border-indigo-500 ring-2 ring-indigo-400"
                 : "border-transparent opacity-75 hover:opacity-100 hover:border-indigo-300"
         }`;
-
-    // Framer Motion variants for button animations
-    const buttonVariants = {
-        initial: { opacity: 0, scale: 0.8 },
-        animate: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 20 } },
-        exit: { opacity: 0, scale: 0.8, transition: { duration: 0.15 } },
-        hover: { scale: 1.1 },
-        tap: { scale: 0.93 },
-    };
 
     return (
         <div className={containerClass}>
@@ -201,12 +198,14 @@ const PhotoCarousel: React.FC = () => {
                             >
                                 {isInLazyRange(idx) ? (
                                     <div className="w-full h-full flex items-center justify-center">
+                                        {/*<Lens zoomFactor={2} lensSize={Number.MAX_VALUE}>*/}
                                         <motion.img
                                             src={getPhotoPath(currentPath, photo.name)}
                                             alt={photo.name}
                                             className="max-w-full max-h-full object-contain mx-auto my-auto block select-none"
                                             draggable={false}
                                         />
+                                        {/*</Lens>*/}
                                     </div>
                                 ) : (
                                     <div className="w-1/2 h-1/2 rounded bg-gray-800 flex items-center justify-center text-gray-500 text-xs">
@@ -267,23 +266,26 @@ const PhotoCarousel: React.FC = () => {
             {!isFullscreen && (
                 <div className={thumbnailBarClass}>
                     <div ref={thumbRef} className={`${thumbnailScrollerClass}`}>
-                        {photos.map((photo, idx) => (
-                            <button
-                                type="button"
-                                key={photo.name}
-                                className={thumbnailButtonClass(idx)}
-                                aria-label={`Select photo ${idx + 1}`}
-                                onClick={() => handleThumbnailClick(idx)}
-                            >
-                                <img
-                                    src={getPreviewPath(directory, photo.id, previewDir)}
-                                    alt={photo.name}
-                                    className={`object-cover w-full h-full select-none ${selectedIndex === idx ? "opacity-100" : "opacity-70"}`}
-                                    draggable={false}
-                                    style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
-                                />
-                            </button>
-                        ))}
+                        <div className="flex flex-row gap-2">
+                            {photos.map((photo, idx) => (
+                                <button
+                                    type="button"
+                                    key={photo.name}
+                                    className={thumbnailButtonClass(idx)}
+                                    aria-label={`Select photo ${idx + 1}`}
+                                    onClick={() => handleThumbnailClick(idx)}
+                                >
+                                    <motion.img
+                                        src={getPreviewPath(directory, photo.id, previewDir)}
+                                        alt={photo.name}
+                                        whileHover={{ scale: 1.1 }}
+                                        loading="lazy"
+                                        className={`object-cover w-full h-full select-none ${selectedIndex === idx ? "opacity-100" : "opacity-70"}`}
+                                        style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
+                                    />
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
