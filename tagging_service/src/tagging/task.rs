@@ -15,7 +15,7 @@ pub fn tagging_task(conn: &mut DbPoolConn) -> Result<()> {
         let name = dir.path.clone();
         let id = dir.id.clone();
         tracing::info!("Starting processing of {}", dir.path);
-        match detect_objects_batch(String::from("models/yolo11n.onnx"), dir, conn) {
+        match detect_objects_batch(String::from("models/yolo11l.onnx"), dir, conn) {
             Ok(_) => {
                 tracing::info!("Object detection done for {}!", name);
                 if let Err(e) = change_directories_status(conn, &id, "is_tagged") {

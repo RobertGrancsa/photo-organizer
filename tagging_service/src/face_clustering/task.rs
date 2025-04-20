@@ -11,6 +11,11 @@ pub fn face_embeddings_task(conn: &mut DbPoolConn) -> Result<()> {
     const RETINAFACE_MODEL_PATH: &str = "models/retinaface.onnx";
     const FACENET_MODEL_PATH: &str = "models/facenet.onnx";
 
+    if un_processed_dirs.is_empty() {
+        tracing::info!("No directories to process for face embeddings");
+        return Ok(());
+    }
+
     tracing::info!(
         "Loading models {}, {}...",
         FACENET_MODEL_PATH,

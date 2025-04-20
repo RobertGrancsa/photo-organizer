@@ -844,6 +844,7 @@ dependencies = [
  "pgvector",
  "serde",
  "serde_yaml",
+ "sha2",
  "tracing",
  "uuid",
  "walkdir",

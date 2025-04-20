@@ -94,12 +94,6 @@ pub fn cluster_faces(conn: &mut DbPoolConn) -> Result<()> {
 
     let clusters = cluster_embeddings(&embedding, 2, 0.2)?;
 
-    for i in 1..11 {
-        let eps = 0.1 * i as f32;
-        tracing::info!("Testing with eps {:.2}", eps);
-        cluster_embeddings(&embedding, 2, eps)?;
-    }
-
     assign_clusters(embedding, clusters.to_vec(), conn)?;
 
     Ok(())

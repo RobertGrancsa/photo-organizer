@@ -1,9 +1,10 @@
 use crate::db::DbPoolConn;
-use crate::schema::schema::directories::dsl::{directories as directories_dsl};
+use crate::schema::schema::directories::dsl::directories as directories_dsl;
 use crate::schema::schema::directories::*;
 use crate::schema::{Directory, NewDirectory};
 use anyhow::{Result, anyhow};
 use diesel::*;
+use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
 pub fn get_directories(conn: &mut DbPoolConn) -> Result<Vec<Directory>> {
@@ -77,4 +78,24 @@ pub fn delete_directory_from_database(conn: &mut DbPoolConn, dir_id: &Uuid) -> R
     }
 
     Ok(())
+}
+
+// Helper function to get the latest update timestamp from the directories table
+pub fn hash_directories(conn: &mut DbPoolConn) -> Result<String> {
+    // Get all (id, is_imported), ordered by id for deterministic hashing
+    let items: Vec<(Uuid, bool)> = directories_dsl
+        .select((id, is_imported))
+        .order(id.asc())
+        .load(conn)?;
+
+    // Serialize to bytes (could be improved to be more compact/precise)
+    let mut bytes = Vec::new();
+    for (id_value, imported) in items {
+        bytes.extend_from_slice(&id_value.to_bytes_le());
+        bytes.push(imported as u8);
+    }
+
+    // Compute the hash
+    let hash = Sha256::digest(&bytes);
+    Ok(format!("{:x}", hash))
 }
