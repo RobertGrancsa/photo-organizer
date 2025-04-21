@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Photo } from "@/types";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { LayoutGroup } from "framer-motion";
-import PhotoWithHover from "@/components/photo/PhotoWithHover";
+import PhotoWithHover from "@/components/photo/grid/PhotoWithHover";
 import { useParams } from "react-router";
 
 interface PhotoGridProps {

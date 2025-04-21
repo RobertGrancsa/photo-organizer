@@ -10,6 +10,7 @@ import ImportFolder from "@/components/folders/ImportFolder";
 import { clearSelectedPhotos, clearSelectedTags } from "@/contexts/slices/photosSlice";
 import { useNavigate } from "react-router";
 import SidebarContextMenu from "@/components/menu/SidebarMenu";
+import SelectedPhotoPreview from "@/components/sidebar/SelectedPhotoPreview";
 
 /**
  * Given an array of path segments, collapse everything except
@@ -178,11 +179,15 @@ const Sidebar: React.FC = () => {
     }
 
     return (
-        <>
+        <div className="flex flex-col h-full justify-between py-2">
+            {/* Selected Photo Preview */}
+            <SelectedPhotoPreview />
+
             <ImportFolder text="Import folder" variant="default" className="m-2" />
+
             <SidebarContextMenu activeTreeElement={activeTreeElement}>
                 <Tree
-                    className="overflow-hidden rounded-md bg-background p-2"
+                    className="overflow-hidden rounded-md bg-background p-2 flex-grow"
                     initialSelectedId={groupedFolders[0].id}
                     initialExpandedItems={groupedFolders.map((v) => v.id)}
                     elements={elements}
@@ -190,7 +195,7 @@ const Sidebar: React.FC = () => {
                     {mapFolder(groupedFolders)}
                 </Tree>
             </SidebarContextMenu>
-        </>
+        </div>
     );
 };
 

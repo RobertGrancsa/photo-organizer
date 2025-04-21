@@ -20,7 +20,6 @@ const TagFilters: React.FC = () => {
                         }}
                         onClickDeselect={() => {
                             dispatch(removeTagFilter(tag));
-                            console.log("removeTagFilter", tag);
                         }}
                     >
                         {capitalize(tag)}

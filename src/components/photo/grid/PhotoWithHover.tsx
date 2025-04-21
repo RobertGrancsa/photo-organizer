@@ -1,6 +1,6 @@
 import * as React from "react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import PhotoPreview from "@/components/photo/PhotoPreview";
+import PhotoPreview from "@/components/photo/grid/PhotoPreview";
 import { Photo } from "@/types";
 import { clsx } from "clsx";
 import { transitionImages } from "@/lib/animations";

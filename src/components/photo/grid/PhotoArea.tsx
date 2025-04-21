@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import PhotoGrid from "@/components/photo/PhotoGrid";
+import PhotoGrid from "@/components/photo/grid/PhotoGrid";
 import { useAppSelector } from "@/lib/hooks";
 import { selectPhotos } from "@/contexts/slices/photosSlice";
 import { Slider } from "@/components/ui/slider";

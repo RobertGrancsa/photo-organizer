@@ -3,8 +3,8 @@ import { createBrowserRouter } from "react-router";
 import HeroPage from "@/pages/HeroPage";
 import HomePage from "@/pages/HomePage";
 import { Loader } from "lucide-react";
-import PhotoArea from "@/components/photo/PhotoArea";
-import PhotoCarousel from "@/components/photo/PhotoCarousel";
+import PhotoArea from "@/components/photo/grid/PhotoArea";
+import PhotoCarousel from "@/components/photo/carousel/PhotoCarousel";
 
 const router = createBrowserRouter([
     {

@@ -8,14 +8,14 @@ import useEmblaCarousel from "embla-carousel-react";
 import { selectPhotos, selectSelectedPhotoIndex, setSelectedPhoto } from "@/contexts/slices/photosSlice";
 import { selectCurrentPath, selectPreviewDir } from "@/contexts/slices/pathSlice";
 
-import { LAZY_RANGE } from "./carousel/constants";
-import { useFullscreen } from "./carousel/useFullscreen";
-import { useCarouselKeyNavigation } from "./carousel/useCarouselKeyNavigation";
-import FullscreenToggle from "./carousel/FullscreenToggle";
-import CarouselSlides from "./carousel/CarouselSlides";
-import NavigationArrows from "./carousel/NavigationArrows";
-import PhotoInfo from "./carousel/PhotoInfo";
-import ThumbnailBar from "./carousel/ThumbnailBar";
+import { LAZY_RANGE } from "./constants";
+import { useFullscreen } from "./hooks/useFullscreen";
+import { BackgroundColor, useCarouselKeyNavigation } from "./hooks/useCarouselKeyNavigation";
+import FullscreenToggle from "./FullscreenToggle";
+import CarouselSlides from "./CarouselSlides";
+import NavigationArrows from "./NavigationArrows";
+import PhotoInfo from "./PhotoInfo";
+import ThumbnailBar from "./ThumbnailBar";
 
 const PhotoCarousel: React.FC = () => {
     // Redux state
@@ -41,7 +41,8 @@ const PhotoCarousel: React.FC = () => {
 
     // Custom hooks
     const { isFullscreen, setIsFullscreen, elementRef: carouselWrapperRef } = useFullscreen();
-    useCarouselKeyNavigation(emblaApi, isFullscreen, setIsFullscreen);
+    const [backgroundColor, setBackgroundColor] = useState<BackgroundColor>("black");
+    useCarouselKeyNavigation(emblaApi, isFullscreen, setIsFullscreen, backgroundColor, setBackgroundColor);
 
     // Update emblaIndex when selectedIndex changes
     useEffect(() => {
@@ -127,7 +128,16 @@ const PhotoCarousel: React.FC = () => {
                 </AnimatePresence>
 
                 {/* Main Carousel */}
-                <CarouselSlides emblaRef={emblaRef} photos={photos} currentPath={currentPath} isInLazyRange={isInLazyRange} />
+                <CarouselSlides
+                    emblaRef={emblaRef}
+                    photos={photos}
+                    currentPath={currentPath}
+                    isInLazyRange={isInLazyRange}
+                    isFullscreen={isFullscreen}
+                    onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+                    backgroundColor={backgroundColor}
+                    onChangeBackground={setBackgroundColor}
+                />
 
                 {/* Navigation Arrows */}
                 <NavigationArrows onPrev={() => emblaApi?.scrollPrev()} onNext={() => emblaApi?.scrollNext()} />
@@ -138,10 +148,11 @@ const PhotoCarousel: React.FC = () => {
                     currentIndex={selectedIndex}
                     totalCount={photos.length}
                     photoName={photos[selectedIndex]?.name || ""}
+                    backgroundColor={backgroundColor}
                 />
             </div>
 
-            {/* Thumbnails Bar - only shown when not in fullscreen */}
+            {/* Thumbnail Bar - only shown when not in fullscreen */}
             {!isFullscreen && (
                 <ThumbnailBar
                     thumbRef={thumbRef}
