@@ -99,6 +99,8 @@ pub async fn create_preview_for_photos(
 
         if output_path.exists() {
             tracing::debug!("Preview already exists, skipping: {:?}", input_path);
+            let new_count = counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            let _ = progress_tx.send(new_count);
             return;
         }
 
