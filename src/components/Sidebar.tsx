@@ -11,6 +11,7 @@ import { clearSelectedPhotos, clearSelectedTags } from "@/contexts/slices/photos
 import { useNavigate } from "react-router";
 import SidebarContextMenu from "@/components/menu/SidebarMenu";
 import SelectedPhotoPreview from "@/components/sidebar/SelectedPhotoPreview";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 /**
  * Given an array of path segments, collapse everything except
@@ -179,21 +180,29 @@ const Sidebar: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col h-full justify-between py-2">
+        <div className="flex flex-col justify-between py-2">
             {/* Selected Photo Preview */}
             <SelectedPhotoPreview />
 
             <ImportFolder text="Import folder" variant="default" className="m-2" />
 
             <SidebarContextMenu activeTreeElement={activeTreeElement}>
-                <Tree
-                    className="overflow-hidden rounded-md bg-background p-2 flex-grow"
-                    initialSelectedId={groupedFolders[0].id}
-                    initialExpandedItems={groupedFolders.map((v) => v.id)}
-                    elements={elements}
-                >
-                    {mapFolder(groupedFolders)}
-                </Tree>
+                <Card className="m-2 gap-0">
+                    <CardHeader>
+                        <CardTitle>Local folders</CardTitle>
+                        {/*<CardDescription>Select any folder from your hard drive or add a new one</CardDescription>*/}
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <Tree
+                            className="overflow-hidden rounded-md bg-background p-2 flex-grow"
+                            initialSelectedId={groupedFolders[0].id}
+                            initialExpandedItems={groupedFolders.map((v) => v.id)}
+                            elements={elements}
+                        >
+                            {mapFolder(groupedFolders)}
+                        </Tree>
+                    </CardContent>
+                </Card>
             </SidebarContextMenu>
         </div>
     );

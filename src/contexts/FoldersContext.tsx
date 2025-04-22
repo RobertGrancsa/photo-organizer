@@ -28,7 +28,6 @@ const useIsInitialized = () => {
         }
 
         if (isSuccess && data.length && !dirName) {
-            console.log("set path");
             dispatch(setPath(data[0]));
             navigate("/" + data[0].id, { replace: true });
         }

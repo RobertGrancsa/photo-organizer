@@ -20,12 +20,12 @@ const SelectedPhotoPreview: React.FC = () => {
     const photoPath = getPreviewPath(dir.id, selectedPhoto.id, previewDir);
 
     return (
-        <div className="p-3 border rounded-md mt-auto mb-2 mx-2 bg-background">
-            <h3 className="text-sm font-medium mb-2 truncate" title={selectedPhoto.name}>
+        <div className="border rounded-md mt-auto mb-2 mx-2 bg-background">
+            <h3 className="text-sm font-medium my-2 truncate mx-3" title={selectedPhoto.name}>
                 {selectedPhoto.name}
             </h3>
-            <div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted">
-                <img src={photoPath} alt={selectedPhoto.name} className="object-cover w-full h-full" />
+            <div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted p-2">
+                <img src={photoPath} alt={selectedPhoto.name} className="object-contain w-full h-full" />
             </div>
         </div>
     );

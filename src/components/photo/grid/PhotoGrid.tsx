@@ -40,7 +40,7 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, columnCount = 3 }) => {
         count: rowCount,
         getScrollElement: () => parentRef.current,
         estimateSize: calculateHeight,
-        overscan: 5,
+        overscan: 3,
         useAnimationFrameWithResizeObserver: true,
         initialOffset: sessionOffset,
         gap: 4,
@@ -69,6 +69,7 @@ const PhotoGrid: React.FC<PhotoGridProps> = ({ photos, columnCount = 3 }) => {
 
     // Save scroll position per directory to session storage
     const updateIfScrolling = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+        // TODO: Make this more efficient
         sessionStorage.setItem(getScrollKey(), e.currentTarget.scrollTop.toString());
     };
 
