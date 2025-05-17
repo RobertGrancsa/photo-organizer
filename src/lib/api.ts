@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Folder, PhotoData } from "@/types";
+import { Folder, PhotoData, PhotoSummary } from "@/types";
 
 export async function getFolders(): Promise<Folder[]> {
     return invoke("get_folders");
@@ -19,4 +19,9 @@ export async function getFaceClusters(path: string): Promise<Record<string, stri
 
 export async function deleteFolder(path: string): Promise<void> {
     return invoke("delete_folder", { path });
+}
+
+export async function getPhotoSummary(photoIds: string[]): Promise<PhotoSummary> {
+    return invoke("get_basic_metadata", { photoIds });
+
 }

@@ -5,6 +5,7 @@ import { Photo } from "@/types";
 import { clsx } from "clsx";
 import { transitionImages } from "@/lib/animations";
 import { motion } from "framer-motion";
+import PhotoHoverCard from "./PhotoHoverCard";
 
 interface PhotoWithHoverProps {
     photo: Photo;
@@ -27,10 +28,7 @@ const PhotoWithHover: React.FC<PhotoWithHoverProps> = ({ photo, index }) => {
                 </motion.div>
             </HoverCardTrigger>
             <HoverCardContent className="w-fit">
-                <div className="flex justify-between flex-col space-x-4">
-                    <h4 className="text-sm font-semibold">Name: {photo.name}</h4>
-                    <p className="text-sm">Date: 2020/03/10</p>
-                </div>
+                <PhotoHoverCard photo={photo} />
             </HoverCardContent>
         </HoverCard>
     );

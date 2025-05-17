@@ -48,7 +48,7 @@ pub struct Photo {
 //     pub tags: Vec<NewPhotoTagMapping>,
 // }
 
-#[derive(Queryable, Selectable, Serialize)]
+#[derive(Queryable, Selectable, Serialize, Insertable)]
 #[diesel(table_name = crate::schema::schema::exif_metadata)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ExifMetadata {
@@ -111,6 +111,22 @@ pub struct ExifMetadata {
     pub gps_date_stamp: Option<String>,
 
     pub created_at: Option<NaiveDateTime>,
+}
+
+#[derive(Serialize)]
+pub struct PhotoSummary {
+    pub id: Uuid,
+    pub make: Option<String>,
+    pub model: Option<String>,
+    pub date_time_original: Option<NaiveDateTime>,
+    pub width: Option<i32>,
+    pub height: Option<i32>,
+    pub iso_speed: Option<i32>,
+    pub aperture: Option<f64>,
+    pub shutter_speed: Option<String>,
+    pub focal_length: Option<f64>,
+    pub gps_latitude: Option<String>,
+    pub gps_longitude: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

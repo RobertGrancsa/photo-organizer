@@ -3,7 +3,9 @@ use uuid::Uuid;
 
 use crate::commands::types::PhotoData;
 use db_service::db::DbPool;
+use db_service::schema::PhotoSummary;
 use db_service::services::directory::get_directory_id_by_name;
+use db_service::services::metadata::get_basic_metadata_for_photos;
 use db_service::services::photo::get_photos_filtered;
 use db_service::services::tags::get_unique_filters;
 
@@ -34,4 +36,17 @@ pub fn get_photos_from_path(
         photos: get_photos_filtered(conn, path_uuid, tag_filters).map_err(|e| e.to_string())?,
         tags: get_unique_filters(conn, path_uuid).map_err(|e| e.to_string())?,
     })
+}
+
+#[tracing::instrument]
+#[tauri::command]
+pub fn get_basic_metadata(
+    pool: State<DbPool>,
+    photo_ids: Vec<Uuid>,
+) -> Result<Vec<PhotoSummary>, String> {
+    let conn = &mut pool.get().map_err(|e| e.to_string())?;
+
+    let results = get_basic_metadata_for_photos(conn, &photo_ids).map_err(|e| e.to_string())?;
+
+    Ok(results)
 }

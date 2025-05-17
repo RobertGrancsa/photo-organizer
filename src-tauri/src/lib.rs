@@ -1,9 +1,9 @@
 pub mod commands;
 pub mod task_queue;
 
-use crate::commands::directories::{add_folder, get_folders, delete_folder};
+use crate::commands::directories::{add_folder, delete_folder, get_folders};
 use crate::commands::faces::get_face_clusters;
-use crate::commands::photos::get_photos_from_path;
+use crate::commands::photos::{get_basic_metadata, get_photos_from_path};
 use crate::task_queue::tasks::pre_initialization::restart_background_processing;
 use crate::task_queue::tasks::worker::task_worker;
 use crate::task_queue::TaskQueue;
@@ -56,6 +56,7 @@ pub fn run() {
             get_folders,
             get_photos_from_path,
             get_face_clusters,
+            get_basic_metadata,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

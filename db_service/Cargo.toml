@@ -13,8 +13,11 @@ serde = { version = "1", features = ["derive"] }
 pgvector = { version = "0.4", features = ["diesel"] }
 
 walkdir = "2.5"
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 serde_yaml = "0.9"
 tracing = "0.1.41"
 image = "0.25.6"
 sha2 = "0.10.8"
+rayon = "1.10.0"
+exiftool = "0.2.3"
+serde_json = "1.0"

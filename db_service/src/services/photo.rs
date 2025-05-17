@@ -2,6 +2,7 @@ use crate::db::DbPoolConn;
 use crate::schema::schema::photos::dsl::photos as photos_dsl;
 use crate::schema::schema::{directories, photos};
 use crate::schema::{Directory, Photo};
+use crate::services::metadata::save_metadata_from_photos;
 use anyhow::Result;
 use diesel::prelude::*;
 use diesel::update;
@@ -33,13 +34,19 @@ pub fn insert_photos_from_directory(conn: &mut DbPoolConn, dir: &Directory) -> R
         .values(&photo_entries)
         .execute(conn)?;
 
+    let exif_entries_len = save_metadata_from_photos(&photo_entries, dir, conn)?;
+
     use crate::schema::schema::directories::dsl::directories as directories_dsl;
 
     update(directories_dsl.filter(directories::id.eq(dir.id)))
         .set(directories::photo_count.eq(photo_entries.len() as i32))
         .execute(conn)?;
 
-    tracing::info!("Inserted {} photos into the database.", photo_entries.len());
+    tracing::info!(
+        "Inserted {} photos and {} metadata entries into the database.",
+        photo_entries.len(),
+        exif_entries_len
+    );
     Ok(photo_entries.len())
 }
 
