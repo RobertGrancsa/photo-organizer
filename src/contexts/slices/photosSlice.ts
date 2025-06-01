@@ -2,7 +2,7 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/store";
 import { Photo, PhotoData } from "@/types";
 
-interface PhotosState {
+export interface PhotosState {
     photos: Photo[];
     tags: string[];
     selectedTags: string[];

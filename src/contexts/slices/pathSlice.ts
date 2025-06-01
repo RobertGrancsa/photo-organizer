@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "@/lib/store";
+import type { RootState } from "@/lib/store";
 import { Folder } from "@/types/folder";
 
-interface PathState {
+export interface PathState {
     folder: Folder;
     previewsDir: string;
 }

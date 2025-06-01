@@ -6,7 +6,7 @@ interface MeasureWrapperProps {
 }
 
 const MeasureWrapper: React.FC<PropsWithChildren<MeasureWrapperProps>> = ({ children, onResize }) => {
-    const ref = useRef();
+    const ref = useRef(null);
 
     useEffect(() => {
         if (!ref.current) return;

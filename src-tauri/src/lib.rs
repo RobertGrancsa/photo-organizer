@@ -9,14 +9,26 @@ use crate::task_queue::tasks::worker::task_worker;
 use crate::task_queue::TaskQueue;
 use db_service::db::init_pool;
 use std::sync::Arc;
+use rayon::ThreadPoolBuilder;
 use tauri::Manager;
 use tokio::sync::Mutex;
 
 pub const APP_NAME: &str = "photo-organizer";
 
+fn init_rayon() {
+    let num_threads = num_cpus::get().saturating_sub(1).max(1); // At least 1 thread
+    tracing::info!(num_threads = num_threads, "Initializing Rayon Thread");
+    ThreadPoolBuilder::new()
+        .num_threads(num_threads)
+        .build_global()
+        .expect("Failed to initialize Rayon thread pool");
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tracing_subscriber::fmt::init();
+
+    init_rayon();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::new().build())
