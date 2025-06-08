@@ -14,6 +14,7 @@ pub fn tagging_task(conn: &mut DbPoolConn) -> Result<()> {
     un_processed_dirs.into_iter().for_each(|dir| {
         let name = dir.path.clone();
         let id = dir.id.clone();
+        let now = std::time::Instant::now();
         tracing::info!("Starting processing of {}", dir.path);
         match detect_objects_batch(String::from("models/yolo11l.onnx"), dir, conn) {
             Ok(_) => {
@@ -26,6 +27,7 @@ pub fn tagging_task(conn: &mut DbPoolConn) -> Result<()> {
                 tracing::error!("Object detection failed for {}: {}", name, err);
             }
         }
+        tracing::info!("{} processing took {:?}", name, now.elapsed());
     });
 
     Ok(())

@@ -14,9 +14,9 @@ const FacesDisplay: React.FC = () => {
             <ResizablePanel defaultSize={40} className="bg-white overflow-auto rounded-lg w-full">
                 <motion.div initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex p-4 w-full h-full bg-white">
                     <div className="bg-white flex items-center gap-2 w-full flex-wrap overflow-auto z-100">
-                        {Object.values(facesClusters).map((faceList, i) => (
-                            <FaceGroup key={i} faceIds={faceList} />
-                        ))}
+                        {Object.entries(facesClusters).map(([dirId, faceClusters], i) =>
+                            Object.entries(faceClusters).map(([, faceList]) => <FaceGroup key={i} faceIds={faceList} dirId={dirId} />)
+                        )}
                     </div>
                 </motion.div>
             </ResizablePanel>

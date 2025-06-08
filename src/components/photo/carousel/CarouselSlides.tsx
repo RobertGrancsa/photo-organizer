@@ -6,12 +6,7 @@ import { clsx } from "clsx";
 import { THUMB_SIZE } from "@/components/photo/carousel/constants";
 import ImageContextMenu from "./context-menu/ImageContextMenu";
 import { BackgroundColor } from "@/components/photo/carousel/hooks/useCarouselKeyNavigation";
-
-interface Photo {
-    id: string;
-    name: string;
-    path?: string;
-}
+import { Folder, Photo } from "@/types";
 
 interface CarouselSlidesProps {
     emblaRef: EmblaViewportRefType;
@@ -22,12 +17,14 @@ interface CarouselSlidesProps {
     onToggleFullscreen?: () => void;
     backgroundColor?: string;
     onChangeBackground?: (color: BackgroundColor) => void;
+    folderData: Folder[];
 }
 
 const CarouselSlides: React.FC<CarouselSlidesProps> = ({
     emblaRef,
     photos,
     currentPath,
+    folderData,
     isInLazyRange,
     isFullscreen = false,
     onToggleFullscreen = () => {},
@@ -70,7 +67,10 @@ const CarouselSlides: React.FC<CarouselSlidesProps> = ({
                             {isInLazyRange(idx) ? (
                                 <div className="w-full h-full flex items-center justify-center p-4">
                                     <motion.img
-                                        src={getPhotoPath(currentPath, photo.name)}
+                                        src={getPhotoPath(
+                                            currentPath ? currentPath : folderData.find((folder) => folder.id === photo.path)?.path,
+                                            photo.name
+                                        )}
                                         alt={photo.name}
                                         className="max-w-full max-h-full object-contain mx-auto my-auto block select-none"
                                         draggable={false}

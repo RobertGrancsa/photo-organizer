@@ -2,7 +2,7 @@ import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Photo } from "@/types";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { selectCurrentFolder, selectPreviewDir } from "@/contexts/slices/pathSlice";
+import { selectPreviewDir } from "@/contexts/slices/pathSlice";
 import { motion } from "framer-motion";
 import { clsx } from "clsx";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,12 +23,11 @@ const cardVariants = {
 };
 
 const PhotoPreview: React.FC<PhotoProps> = ({ photo, index }) => {
-    const dir = useAppSelector(selectCurrentFolder);
     const previewDir = useAppSelector(selectPreviewDir);
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    const previewPath = getPreviewPath(dir.id, photo.id, previewDir);
+    const previewPath = getPreviewPath(photo.path, photo.id, previewDir);
 
     const [error, setError] = useState<boolean>(false);
     const [loaded, setLoaded] = useState<boolean>(false);

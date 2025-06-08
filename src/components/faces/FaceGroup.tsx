@@ -3,17 +3,17 @@ import { useState } from "react";
 import { useAppSelector } from "@/lib/hooks";
 import { Card, CardContent } from "@/components/ui/card";
 import { getFacePath } from "@/lib/utils";
-import { selectCurrentFolder, selectPreviewDir } from "@/contexts/slices/pathSlice";
+import { selectPreviewDir } from "@/contexts/slices/pathSlice";
 import { clsx } from "clsx";
 import { motion } from "framer-motion";
 
 interface FacesDisplayProps {
     faceIds: string[];
+    dirId: string;
     partOfGroup?: boolean;
 }
 
-const FaceGroup: React.FC<FacesDisplayProps> = ({ faceIds, partOfGroup }) => {
-    const directory = useAppSelector(selectCurrentFolder);
+const FaceGroup: React.FC<FacesDisplayProps> = ({ faceIds, partOfGroup, dirId }) => {
     const previewDir = useAppSelector(selectPreviewDir);
     const firstFace = faceIds[0];
     const [showMore, setShowMore] = useState<boolean>(false);
@@ -30,14 +30,16 @@ const FaceGroup: React.FC<FacesDisplayProps> = ({ faceIds, partOfGroup }) => {
                     onClick={() => setShowMore((val) => !val && faceIds.length > 1)}
                 >
                     <CardContent className="p-0 w-24 h-32 relative">
-                        <img className="object-cover w-24 h-32" src={getFacePath(directory.id, firstFace, previewDir)} alt="faces" />
+                        <img className="object-cover w-24 h-32" src={getFacePath(dirId, firstFace, previewDir)} alt="faces" />
                         {!partOfGroup && (
                             <div className="bg-accent rounded-3xl absolute top-2 right-2 w-4 text-center shadow">{faceIds.length}</div>
                         )}
                     </CardContent>
                 </Card>
             </motion.div>
-            {showMore && faceIds.length > 1 && faceIds.map((faceId, i) => <FaceGroup key={i} faceIds={[faceId]} partOfGroup={true} />)}
+            {showMore &&
+                faceIds.length > 1 &&
+                faceIds.map((faceId, i) => <FaceGroup key={i} faceIds={[faceId]} partOfGroup={true} dirId={dirId} />)}
         </>
     );
 };

@@ -39,13 +39,21 @@ pub fn insert_photo_tags_mappings(
         .execute(conn)
 }
 
-pub fn get_unique_filters(conn: &mut DbPoolConn, path_uuid: Uuid) -> Result<Vec<String>> {
+pub fn get_unique_filters(conn: &mut DbPoolConn, path_uuid: Option<Uuid>) -> Result<Vec<String>> {
     use crate::schema::schema::{photo_tags_mappings, photos};
 
-    // Join photo_tags_mappings to photos to filter by the photo directory
-    let results = photo_tags_mappings::table
+    // Start with the base query
+    let mut query = photo_tags_mappings::table
         .inner_join(photos::table.on(photos::id.eq(photo_tags_mappings::photo_id)))
-        .filter(photos::path.eq(path_uuid))
+        .into_boxed();
+
+    // Apply path filter only if path_uuid is provided
+    if let Some(path_id) = path_uuid {
+        query = query.filter(photos::path.eq(path_id));
+    }
+
+    // Execute the query with common operations
+    let results = query
         .select(photo_tags_mappings::tag)
         .distinct()
         .order_by(photo_tags_mappings::tag)

@@ -8,7 +8,7 @@ import { getFolders } from "@/lib/api";
 import { Folder as FolderType } from "@/types";
 import ImportFolder from "@/components/folders/ImportFolder";
 import { clearSelectedPhotos, clearSelectedTags } from "@/contexts/slices/photosSlice";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import SidebarContextMenu from "@/components/menu/SidebarMenu";
 import SelectedPhotoPreview from "@/components/sidebar/SelectedPhotoPreview";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -186,11 +186,20 @@ const Sidebar: React.FC = () => {
 
             <ImportFolder text="Import folder" variant="default" className="m-2" />
 
+            <Card className="m-2 gap-0">
+                <CardHeader>
+                    <CardTitle>
+                        <Link to="/all" onClick={() => dispatch(setPath({ id: "all", path: "", isImported: false, photoCount: 0 }))}>
+                            All Photos
+                        </Link>
+                    </CardTitle>
+                </CardHeader>
+            </Card>
+
             <SidebarContextMenu activeTreeElement={activeTreeElement}>
                 <Card className="m-2 gap-0">
                     <CardHeader>
                         <CardTitle>Local folders</CardTitle>
-                        {/*<CardDescription>Select any folder from your hard drive or add a new one</CardDescription>*/}
                     </CardHeader>
                     <CardContent className="p-0">
                         <Tree

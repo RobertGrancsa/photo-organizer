@@ -3,22 +3,17 @@ import { motion } from "framer-motion";
 import { getPreviewPath } from "@/lib/utils";
 import { THUMB_SIZE } from "./constants";
 import { EmblaViewportRefType } from "embla-carousel-react";
-
-interface Photo {
-    id: string;
-    name: string;
-}
+import { Photo } from "@/types";
 
 interface ThumbnailBarProps {
     thumbRef: EmblaViewportRefType;
     photos: Photo[];
     selectedIndex: number;
-    directory: string;
     previewDir: string;
     onThumbnailClick: (idx: number) => void;
 }
 
-const ThumbnailBar: React.FC<ThumbnailBarProps> = ({ thumbRef, photos, selectedIndex, directory, previewDir, onThumbnailClick }) => {
+const ThumbnailBar: React.FC<ThumbnailBarProps> = ({ thumbRef, photos, selectedIndex, previewDir, onThumbnailClick }) => {
     const thumbnailBarClass =
         "mt-2 mb-2 flex justify-center scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent absolute bottom-0 left-0 right-0 z-10 bg-white/10 backdrop-blur-sm rounded-lg shadow-lg border border-gray-700";
     const thumbnailScrollerClass = "overflow-x-hidden px-4";
@@ -45,7 +40,7 @@ const ThumbnailBar: React.FC<ThumbnailBarProps> = ({ thumbRef, photos, selectedI
                             onClick={() => onThumbnailClick(idx)}
                         >
                             <motion.img
-                                src={getPreviewPath(directory, photo.id, previewDir)}
+                                src={getPreviewPath(photo.path, photo.id, previewDir)}
                                 alt={photo.name}
                                 whileHover={{ scale: 1.1 }}
                                 loading="lazy"

@@ -62,7 +62,7 @@ pub fn get_photos_from_directory(conn: &mut DbPoolConn, path_uuid: Uuid) -> Vec<
 
 pub fn get_photos_filtered(
     conn: &mut DbPoolConn,
-    path_uuid: Uuid,
+    path_uuid: Option<Uuid>,
     tag_filters: Vec<String>,
 ) -> QueryResult<Vec<Photo>> {
     use crate::schema::schema::photo_tags_mappings;
@@ -71,8 +71,12 @@ pub fn get_photos_filtered(
         .left_outer_join(
             photo_tags_mappings::table.on(photo_tags_mappings::photo_id.eq(photos::id)),
         )
-        .filter(photos::path.eq(path_uuid))
         .into_boxed();
+
+    // Filter by directory if path_uuid is provided
+    if let Some(path_id) = path_uuid {
+        query = query.filter(photos::path.eq(path_id));
+    }
 
     // Only add tag filters if they are provided.
     if !tag_filters.is_empty() {

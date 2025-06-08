@@ -10,7 +10,7 @@ use uuid::Uuid;
 pub fn get_face_clusters(
     pool: State<DbPool>,
     dirs: Option<Vec<String>>,
-) -> Result<HashMap<Uuid, Vec<Uuid>>, String> {
+) -> Result<HashMap<Uuid, HashMap<Uuid, Vec<Uuid>>>, String> {
     let conn = &mut pool.get().map_err(|err| err.to_string())?;
 
     let path_uuid: Option<Vec<Uuid>> = dirs.map(|directories| {

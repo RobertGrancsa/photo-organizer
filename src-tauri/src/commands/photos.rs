@@ -22,13 +22,18 @@ pub fn get_photos_from_path(
 
     // If no UUID is found, return an empty list
     let path_uuid = match path_uuid {
-        Some(uuid) => uuid,
+        Some(uuid) => Some(uuid),
         None => {
-            tracing::error!("No UUID found for path: {}", path);
-            return Ok(PhotoData {
-                photos: vec![],
-                tags: vec![],
-            });
+            if path.is_empty() {
+                tracing::error!("Path is empty, returning all");
+                None
+            } else {
+                tracing::error!("No UUID found for path: {}", path);
+                return Ok(PhotoData {
+                    photos: vec![],
+                    tags: vec![],
+                });
+            }
         }
     };
 

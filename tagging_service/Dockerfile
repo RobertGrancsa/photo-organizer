@@ -20,4 +20,4 @@ COPY tagging_service /tagging_service
 
 FROM base AS development
 
-CMD [ "cargo", "run" ]
+CMD [ "cargo", "run", "--release" ]

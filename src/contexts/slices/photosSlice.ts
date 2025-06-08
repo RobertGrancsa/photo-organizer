@@ -6,7 +6,7 @@ export interface PhotosState {
     photos: Photo[];
     tags: string[];
     selectedTags: string[];
-    facesClusters: Record<string, string[]>;
+    facesClusters: Record<string, Record<string, string[]>>;
     selectedPhoto?: Photo;
     selectedPhotoIndex?: number;
 }
@@ -26,9 +26,23 @@ export const photosSlice = createSlice({
             state.photos = action.payload.photos;
             state.tags = action.payload.tags;
         },
-        setFaceClusters: (state, action: PayloadAction<Record<string, string[]>>) => {
-            const sortedEntries = Object.entries(action.payload).sort(([, a], [, b]) => -(a.length - b.length));
-            state.facesClusters = Object.fromEntries(sortedEntries);
+        setFaceClusters: (state, action: PayloadAction<Record<string, Record<string, string[]>>>) => {
+            // Sort clusters by the sum of face array lengths in each cluster
+            const sortedEntries = Object.entries(action.payload).sort(([, a], [, b]) => {
+                const aSum = Object.values(a).reduce((sum, arr) => sum + arr.length, 0);
+                const bSum = Object.values(b).reduce((sum, arr) => sum + arr.length, 0);
+                return bSum - aSum; // Descending order
+            });
+
+            // For each cluster, sort its faces by array length
+            const sortedClusters = sortedEntries.map(([key, faces]) => {
+                const sortedFaces = Object.entries(faces)
+                    .sort(([, aList], [, bList]) => bList.length - aList.length)
+                    .reduce((obj, [faceKey, faceList]) => ({ ...obj, [faceKey]: faceList }), {});
+                return [key, sortedFaces];
+            });
+
+            state.facesClusters = Object.fromEntries(sortedClusters);
         },
         setSelectedPhoto: (state, action: PayloadAction<{ photo: Photo; index: number }>) => {
             state.selectedPhoto = action.payload.photo;

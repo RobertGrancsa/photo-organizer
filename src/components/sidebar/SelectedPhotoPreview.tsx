@@ -1,12 +1,11 @@
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { selectSelectedPhoto } from "@/contexts/slices/photosSlice";
-import { selectCurrentFolder, selectPreviewDir } from "@/contexts/slices/pathSlice";
+import { selectPreviewDir } from "@/contexts/slices/pathSlice";
 import { getPreviewPath } from "@/lib/utils";
 
 const SelectedPhotoPreview: React.FC = () => {
     const selectedPhoto = useSelector(selectSelectedPhoto);
-    const dir = useSelector(selectCurrentFolder);
     const previewDir = useSelector(selectPreviewDir);
 
     if (!selectedPhoto) {
@@ -17,7 +16,7 @@ const SelectedPhotoPreview: React.FC = () => {
         );
     }
 
-    const photoPath = getPreviewPath(dir.id, selectedPhoto.id, previewDir);
+    const photoPath = getPreviewPath(selectedPhoto.path, selectedPhoto.id, previewDir);
 
     return (
         <div className="border rounded-md mt-auto mb-2 mx-2 bg-background">

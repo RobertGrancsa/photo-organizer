@@ -15,32 +15,36 @@ use uuid::Uuid;
 pub fn fetch_faces_grouped(
     conn: &mut DbPoolConn,
     filter_dirs: Option<Vec<Uuid>>,
-) -> Result<HashMap<Uuid, Vec<Uuid>>> {
+) -> Result<HashMap<Uuid, HashMap<Uuid, Vec<Uuid>>>> {
     // Build the base query joining face_embeddings -> photos.
-    // We select only the columns from face_embeddings.
+    // We select both face embeddings and the directory ID from photos.
     let mut query = face_embeddings::table
         .inner_join(photos::table.on(photos_dsl::id.eq(face_embeddings::photo_id)))
-        .select(face_embeddings::all_columns)
+        .select((face_embeddings::all_columns, photos_dsl::path))
         .into_boxed();
 
-    // Apply filtering if a list of directory paths is provided.
+    // Apply filtering if a list of directory IDs is provided.
     if let Some(dirs) = filter_dirs {
         query = query.filter(photos_dsl::path.eq_any(dirs));
     }
 
     // Execute the query.
-    let faces: Vec<FaceEmbedding> = query.load(conn)?;
+    let results = query.load::<(FaceEmbedding, Uuid)>(conn)?;
 
-    tracing::info!("Found {} faces", faces.len());
+    tracing::info!("Found {} faces", results.len());
 
-    // Group face embeddings by cluster_id.
-    let mut grouped: HashMap<Uuid, Vec<Uuid>> = HashMap::new();
-    for face in faces {
-        if let Some(face_cluster) = face.cluster_id {
-            grouped.entry(face_cluster).or_default().push(face.id);
-        } else {
-            grouped.entry(Uuid::new_v4()).or_default().push(face.id);
-        }
+    // Group face embeddings by directory_id and then by cluster_id.
+    let mut grouped: HashMap<Uuid, HashMap<Uuid, Vec<Uuid>>> = HashMap::new();
+
+    for (face, directory_id) in results {
+        // Get or create the inner map for this directory
+        let dir_map = grouped.entry(directory_id).or_default();
+
+        // Get the cluster ID or generate a random one for noise points
+        let cluster_id = face.cluster_id.unwrap_or_else(Uuid::new_v4);
+
+        // Add the face ID to the appropriate cluster in this directory
+        dir_map.entry(cluster_id).or_default().push(face.id);
     }
 
     Ok(grouped)

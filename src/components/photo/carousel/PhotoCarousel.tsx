@@ -16,6 +16,8 @@ import CarouselSlides from "./CarouselSlides";
 import NavigationArrows from "./NavigationArrows";
 import PhotoInfo from "./PhotoInfo";
 import ThumbnailBar from "./ThumbnailBar";
+import { useQuery } from "@tanstack/react-query";
+import { getFolders } from "@/lib/api";
 
 const PhotoCarousel: React.FC = () => {
     // Redux state
@@ -26,6 +28,8 @@ const PhotoCarousel: React.FC = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { directory } = useParams<{ directory: string; name: string }>();
+    const { data: folderData } = useQuery({ queryKey: ["folders"], queryFn: getFolders });
+    const currentDirId = folderData?.find((folder) => folder.path === currentPath)?.path;
 
     // Carousel setup
     const [emblaRef, emblaApi] = useEmblaCarousel({ skipSnaps: false, loop: true });
@@ -131,7 +135,8 @@ const PhotoCarousel: React.FC = () => {
                 <CarouselSlides
                     emblaRef={emblaRef}
                     photos={photos}
-                    currentPath={currentPath}
+                    currentPath={currentDirId}
+                    folderData={folderData}
                     isInLazyRange={isInLazyRange}
                     isFullscreen={isFullscreen}
                     onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
@@ -158,7 +163,6 @@ const PhotoCarousel: React.FC = () => {
                     thumbRef={thumbRef}
                     photos={photos}
                     selectedIndex={selectedIndex}
-                    directory={directory || ""}
                     previewDir={previewDir}
                     onThumbnailClick={handleThumbnailClick}
                 />

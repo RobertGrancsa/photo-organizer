@@ -29,6 +29,7 @@ pub fn face_embeddings_task(conn: &mut DbPoolConn) -> Result<()> {
     un_processed_dirs.into_iter().for_each(|dir| {
         let name = dir.path.clone();
         let id = dir.id.clone();
+        let now = std::time::Instant::now();
         tracing::info!("Starting generation of embeddings for {}", dir.path);
         match face_embeddings_pipeline(
             Arc::clone(&retinaface_model),
@@ -46,6 +47,7 @@ pub fn face_embeddings_task(conn: &mut DbPoolConn) -> Result<()> {
                 tracing::error!("Face embeddings failed for {}: {}", name, err);
             }
         }
+        tracing::info!("{} processing took {:?}", name, now.elapsed());
     });
 
     Ok(())
