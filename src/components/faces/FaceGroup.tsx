@@ -32,7 +32,7 @@ const FaceGroup: React.FC<FacesDisplayProps> = ({ faceIds, partOfGroup, dirId })
                     <CardContent className="p-0 w-24 h-32 relative">
                         <img className="object-cover w-24 h-32" src={getFacePath(dirId, firstFace, previewDir)} alt="faces" />
                         {!partOfGroup && (
-                            <div className="bg-accent rounded-3xl absolute top-2 right-2 w-4 text-center shadow">{faceIds.length}</div>
+                            <div className="bg-accent rounded-3xl absolute top-2 right-2 text-center shadow px-1">{faceIds.length}</div>
                         )}
                     </CardContent>
                 </Card>
